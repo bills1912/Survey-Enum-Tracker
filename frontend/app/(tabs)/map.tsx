@@ -294,6 +294,94 @@ export default function MapScreen() {
         </View>
       </View>
 
+      {/* Survey Filter */}
+      <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={styles.surveyFilterButton}
+          onPress={() => setShowSurveyPicker(true)}
+        >
+          <MaterialIcons name="filter-list" size={20} color="#2196F3" />
+          <Text style={styles.filterText}>
+            {mapSurveyFilter === 'all' 
+              ? 'All Surveys' 
+              : surveys.find(s => s.id === mapSurveyFilter)?.title || 'Select Survey'}
+          </Text>
+          <MaterialIcons name="arrow-drop-down" size={20} color="#666" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Survey Picker Modal */}
+      <Modal
+        visible={showSurveyPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowSurveyPicker(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowSurveyPicker(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Survey</Text>
+              <TouchableOpacity onPress={() => setShowSurveyPicker(false)}>
+                <MaterialIcons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.surveyList}>
+              <TouchableOpacity
+                style={[
+                  styles.surveyItem,
+                  mapSurveyFilter === 'all' && styles.surveyItemSelected,
+                ]}
+                onPress={() => {
+                  setMapSurveyFilter('all');
+                  setShowSurveyPicker(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.surveyItemText,
+                    mapSurveyFilter === 'all' && styles.surveyItemTextSelected,
+                  ]}
+                >
+                  All Surveys
+                </Text>
+                {mapSurveyFilter === 'all' && (
+                  <MaterialIcons name="check" size={20} color="#4CAF50" />
+                )}
+              </TouchableOpacity>
+              {surveys.map((survey) => (
+                <TouchableOpacity
+                  key={survey.id}
+                  style={[
+                    styles.surveyItem,
+                    mapSurveyFilter === survey.id && styles.surveyItemSelected,
+                  ]}
+                  onPress={() => {
+                    setMapSurveyFilter(survey.id);
+                    setShowSurveyPicker(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.surveyItemText,
+                      mapSurveyFilter === survey.id && styles.surveyItemTextSelected,
+                    ]}
+                  >
+                    {survey.title}
+                  </Text>
+                  {mapSurveyFilter === survey.id && (
+                    <MaterialIcons name="check" size={20} color="#4CAF50" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {!isConnected && (
         <View style={styles.offlineWarning}>
           <MaterialIcons name="warning" size={20} color="#FF9800" />
