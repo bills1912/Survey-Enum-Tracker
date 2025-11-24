@@ -731,6 +731,68 @@ async def serve_dashboard():
         raise HTTPException(status_code=404, detail="Dashboard not found")
     return FileResponse(dashboard_path, media_type="text/html")
 
+# Public endpoints for web dashboard (no authentication required)
+@api_router.get("/public/dashboard-stats")
+async def get_public_dashboard_stats():
+    """Public endpoint for leadership dashboard - no auth required"""
+    try:
+        total_respondents = await db.respondents.count_documents({})
+        pending = await db.respondents.count_documents({"status": SurveyStatus.PENDING})
+        in_progress = await db.respondents.count_documents({"status": SurveyStatus.IN_PROGRESS})
+        completed = await db.respondents.count_documents({"status": SurveyStatus.COMPLETED})
+        
+        # Count active enumerators (those with recent location updates)
+        five_minutes_ago = datetime.utcnow() - timedelta(minutes=10)
+        active_locations = await db.locations.distinct("user_id", {"timestamp": {"$gte": five_minutes_ago}})
+        total_enumerators = await db.users.count_documents({"role": UserRole.ENUMERATOR})
+        
+        return {
+            "total_respondents": total_respondents,
+            "pending": pending,
+            "in_progress": in_progress,
+            "completed": completed,
+            "active_enumerators": len(active_locations),
+            "total_enumerators": total_enumerators
+        }
+    except Exception as e:
+        logger.error(f"Error fetching public dashboard stats: {e}")
+        return {
+            "total_respondents": 0,
+            "pending": 0,
+            "in_progress": 0,
+            "completed": 0,
+            "active_enumerators": 0,
+            "total_enumerators": 0
+        }
+
+@api_router.get("/public/respondents")
+async def get_public_respondents():
+    """Public endpoint for leadership dashboard - no auth required"""
+    try:
+        respondents = await db.respondents.find({}).to_list(1000)
+        return [serialize_doc(r) for r in respondents]
+    except Exception as e:
+        logger.error(f"Error fetching public respondents: {e}")
+        return []
+
+@api_router.get("/public/locations")
+async def get_public_locations():
+    """Public endpoint for leadership dashboard - no auth required"""
+    try:
+        pipeline = [
+            {"$sort": {"timestamp": -1}},
+            {"$group": {
+                "_id": "$user_id",
+                "latest": {"$first": "$$ROOT"}
+            }},
+            {"$replaceRoot": {"newRoot": "$latest"}}
+        ]
+        locations = await db.locations.aggregate(pipeline).to_list(1000)
+        return [serialize_doc(loc) for loc in locations]
+    except Exception as e:
+        logger.error(f"Error fetching public locations: {e}")
+        return []
+
 # Include router
 app.include_router(api_router)
 
