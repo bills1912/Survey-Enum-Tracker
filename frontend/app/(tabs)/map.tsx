@@ -13,6 +13,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
+import { useSurvey } from '../../src/contexts/SurveyContext';
 import { respondentAPI, locationAPI } from '../../src/services/api';
 import { Respondent, LocationTracking } from '../../src/types';
 import * as Location from 'expo-location';
