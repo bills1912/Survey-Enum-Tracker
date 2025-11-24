@@ -15,6 +15,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
+import { useSurvey } from '../../src/contexts/SurveyContext';
 import { respondentAPI } from '../../src/services/api';
 import { storageService } from '../../src/services/storage';
 import * as Location from 'expo-location';
@@ -24,8 +25,11 @@ import MapPicker from '../../src/components/MapPicker';
 export default function AddRespondent() {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
+  const { selectedSurveyId } = useSurvey();
   const router = useRouter();
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -70,14 +74,22 @@ export default function AddRespondent() {
       return;
     }
 
+    if (!selectedSurveyId) {
+      Alert.alert('Error', 'Please select a survey first from the Surveys screen');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const respondentData = {
         name: name.trim(),
+        phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
         location: {
           latitude: location.latitude,
           longitude: location.longitude,
         },
+        survey_id: selectedSurveyId,
         enumerator_id: user?.id,
       };
 
@@ -88,6 +100,8 @@ export default function AddRespondent() {
             text: 'OK',
             onPress: () => {
               setName('');
+              setPhone('');
+              setAddress('');
               setLocation(null);
               router.back();
             },
@@ -104,6 +118,8 @@ export default function AddRespondent() {
               text: 'OK',
               onPress: () => {
                 setName('');
+                setPhone('');
+                setAddress('');
                 setLocation(null);
                 router.back();
               },
@@ -113,7 +129,8 @@ export default function AddRespondent() {
       }
     } catch (error: any) {
       console.error('Error adding respondent:', error);
-      Alert.alert('Error', 'Failed to add respondent. Please try again.');
+      const errorMsg = error.response?.data?.detail || error.message || 'Failed to add respondent. Please try again.';
+      Alert.alert('Error', errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -151,6 +168,29 @@ export default function AddRespondent() {
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter phone number (optional)"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Enter address (optional)"
+              value={address}
+              onChangeText={setAddress}
+              multiline
+              numberOfLines={3}
             />
           </View>
 
@@ -300,6 +340,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#ddd',
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   locationDisplay: {
     flexDirection: 'row',
