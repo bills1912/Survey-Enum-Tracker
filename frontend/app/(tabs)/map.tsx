@@ -184,8 +184,19 @@ export default function MapScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Field Locations</Text>
         <View style={styles.headerActions}>
+          {user?.role === 'enumerator' && (
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/add-respondent')}
+              style={styles.addButton}
+            >
+              <MaterialIcons name="add-circle" size={24} color="#4CAF50" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
-            onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+            onPress={() => {
+              setSelectedRespondent(null);
+              setViewMode(viewMode === 'map' ? 'list' : 'map');
+            }}
             style={styles.viewToggle}
           >
             <MaterialIcons
