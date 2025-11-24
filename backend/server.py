@@ -336,6 +336,57 @@ async def get_enumerators(current_user: dict = Depends(get_current_user)):
     enumerators = await db.users.find(query).to_list(1000)
     return [serialize_doc(user) for user in enumerators]
 
+# Survey routes
+@api_router.post("/surveys", response_model=Survey)
+async def create_survey(survey: SurveyCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Only admins and supervisors can create surveys")
+    
+    survey_dict = survey.dict()
+    survey_dict["created_by"] = current_user["id"]
+    survey_dict["created_at"] = datetime.utcnow()
+    survey_dict["is_active"] = True
+    
+    result = await db.surveys.insert_one(survey_dict)
+    survey_dict["id"] = str(result.inserted_id)
+    
+    return survey_dict
+
+@api_router.get("/surveys")
+async def get_surveys(current_user: dict = Depends(get_current_user)):
+    query = {"is_active": True}
+    
+    if current_user["role"] == UserRole.SUPERVISOR:
+        query["supervisor_ids"] = current_user["id"]
+    elif current_user["role"] == UserRole.ENUMERATOR:
+        query["enumerator_ids"] = current_user["id"]
+    
+    surveys = await db.surveys.find(query).to_list(1000)
+    return [serialize_doc(s) for s in surveys]
+
+@api_router.get("/surveys/{survey_id}")
+async def get_survey(survey_id: str, current_user: dict = Depends(get_current_user)):
+    survey = await db.surveys.find_one({"_id": ObjectId(survey_id)})
+    if not survey:
+        raise HTTPException(status_code=404, detail="Survey not found")
+    return serialize_doc(survey)
+
+@api_router.put("/surveys/{survey_id}")
+async def update_survey(survey_id: str, survey_data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Only admins and supervisors can update surveys")
+    
+    result = await db.surveys.update_one(
+        {"_id": ObjectId(survey_id)},
+        {"$set": survey_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Survey not found")
+    
+    survey = await db.surveys.find_one({"_id": ObjectId(survey_id)})
+    return serialize_doc(survey)
+
 # Respondent routes
 @api_router.post("/respondents", response_model=Respondent)
 async def create_respondent(respondent: RespondentCreate, current_user: dict = Depends(get_current_user)):
