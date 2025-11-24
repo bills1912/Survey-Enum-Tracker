@@ -13,12 +13,11 @@ from typing import Dict, List, Optional
 # Configuration
 BASE_URL = "https://datacollect-2.preview.emergentagent.com/api"
 
-# Test credentials from seed data
+# Test credentials from seed data (as specified in review request)
 TEST_USERS = {
-    "admin": {"email": "admin@fieldtracker.com", "password": "admin123"},
-    "supervisor": {"email": "supervisor@fieldtracker.com", "password": "supervisor123"},
-    "enumerator1": {"email": "enum1@fieldtracker.com", "password": "enum123"},
-    "enumerator2": {"email": "enum2@fieldtracker.com", "password": "enum123"}
+    "admin": {"email": "admin@example.com", "password": "admin123"},
+    "supervisor": {"email": "supervisor@example.com", "password": "supervisor123"},
+    "enumerator": {"email": "enum1@example.com", "password": "enum123"}
 }
 
 class FieldTrackerAPITester:
