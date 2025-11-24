@@ -556,7 +556,7 @@ async def create_faq(faq: FAQItem, current_user: dict = Depends(get_current_user
     result = await db.faqs.insert_one(faq_dict)
     faq_dict["id"] = str(result.inserted_id)
     
-    return faq_dict
+    return serialize_doc(faq_dict)
 
 # Dashboard stats
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
