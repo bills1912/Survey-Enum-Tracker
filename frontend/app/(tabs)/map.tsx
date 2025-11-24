@@ -104,9 +104,47 @@ export default function MapScreen() {
     );
   }
 
+  // Open Google Maps navigation
+  const openGoogleMaps = (respondent: Respondent) => {
+    const { latitude, longitude } = respondent.location;
+    const url = Platform.OS === 'ios'
+      ? `maps://app?daddr=${latitude},${longitude}`
+      : `google.navigation:q=${latitude},${longitude}`;
+    
+    Alert.alert(
+      'Navigate',
+      `Open Google Maps to navigate to ${respondent.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Open',
+          onPress: () => {
+            // For mobile, try Google Maps
+            import('react-native').then(({ Linking }) => {
+              Linking.openURL(url).catch(() => {
+                // Fallback to web URL
+                Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`);
+              });
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  // Handle location click - zoom to location
+  const handleLocationClick = (respondent: Respondent) => {
+    setSelectedRespondent(respondent);
+    setViewMode('map');
+  };
+
   // Render location list item
   const renderLocationItem = ({ item }: { item: Respondent }) => (
-    <View style={styles.locationCard}>
+    <TouchableOpacity
+      style={styles.locationCard}
+      onPress={() => handleLocationClick(item)}
+      activeOpacity={0.7}
+    >
       <View style={styles.locationHeader}>
         <View
           style={[styles.statusDot, { backgroundColor: getMarkerColor(item.status) }]}
@@ -115,6 +153,7 @@ export default function MapScreen() {
           <Text style={styles.locationName}>{item.name}</Text>
           <Text style={styles.locationStatus}>{item.status.replace('_', ' ')}</Text>
         </View>
+        <MaterialIcons name="chevron-right" size={24} color="#ccc" />
       </View>
       <View style={styles.coordinatesRow}>
         <MaterialIcons name="location-on" size={16} color="#666" />
@@ -122,7 +161,19 @@ export default function MapScreen() {
           {item.location.latitude.toFixed(6)}, {item.location.longitude.toFixed(6)}
         </Text>
       </View>
-    </View>
+      {user?.role === 'enumerator' && (
+        <TouchableOpacity
+          style={styles.navigateButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            openGoogleMaps(item);
+          }}
+        >
+          <MaterialIcons name="directions" size={20} color="#fff" />
+          <Text style={styles.navigateButtonText}>Navigate</Text>
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
   );
 
   return (
