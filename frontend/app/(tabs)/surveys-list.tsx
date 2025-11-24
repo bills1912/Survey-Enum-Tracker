@@ -86,6 +86,28 @@ export default function SurveysListScreen() {
     }
   };
 
+  const loadSurveyStats = async () => {
+    if (!isConnected) return;
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const statsPromises = surveys.map(survey =>
+        axios.get(`${API_URL}/surveys/${survey.id}/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      );
+      
+      const results = await Promise.all(statsPromises);
+      const stats: {[key: string]: any} = {};
+      results.forEach((result, index) => {
+        stats[surveys[index].id] = result.data;
+      });
+      setSurveyStats(stats);
+    } catch (error) {
+      console.error('Error loading survey stats:', error);
+    }
+  };
+
   const handleSync = async () => {
     if (!isConnected) {
       Alert.alert('Offline', 'Cannot sync while offline. Please connect to the internet.');
