@@ -100,6 +100,30 @@ class SurveyStatus:
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
 
+class Survey(BaseModel):
+    id: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
+    region_level: str  # regency, provincial, national
+    region_name: str
+    supervisor_ids: List[str] = []
+    enumerator_ids: List[str] = []
+    created_by: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_active: bool = True
+
+class SurveyCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
+    region_level: str
+    region_name: str
+    supervisor_ids: List[str] = []
+    enumerator_ids: List[str] = []
+
 class RespondentLocation(BaseModel):
     latitude: float
     longitude: float
@@ -109,6 +133,7 @@ class Respondent(BaseModel):
     name: str
     location: RespondentLocation
     status: str = SurveyStatus.PENDING
+    survey_id: str  # Link to survey
     enumerator_id: Optional[str] = None
     assigned_by: Optional[str] = None
     survey_data: Optional[Dict[str, Any]] = None
