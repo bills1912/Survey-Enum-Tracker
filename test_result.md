@@ -360,6 +360,18 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Added sync buttons with 'Last synced' timestamps to Dashboard, Surveys List, Map, and Chat screens. Users can manually refresh data. Sync buttons are disabled when offline."
+  
+  - task: "Survey Detail Screen"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/(tabs)/survey-detail.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Survey Detail screen already implemented with comprehensive stats display (total, pending, in-progress, completed respondents), progress bar showing completion rate, survey information card with region and dates, and sync functionality. Uses existing backend endpoints /api/surveys/{surveyId} and /api/surveys/{surveyId}/stats"
 
 metadata:
   created_by: "main_agent"
