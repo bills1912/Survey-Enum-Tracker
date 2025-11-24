@@ -330,3 +330,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Created comprehensive field tracking application with offline-first architecture. Backend has all APIs implemented including auth, survey management, location tracking, chat (with Gemini AI), and dashboard stats. Frontend has complete mobile app with 5 main screens (Dashboard, Surveys, Map, Chat, Profile). Please test all backend APIs first with focus on authentication, CRUD operations, location tracking, Gemini AI chat integration, and role-based access control."
+  - agent: "main"
+    message: "Implemented multi-survey integration with global SurveyContext. Added survey filtering to Dashboard (shows survey-specific stats when a survey is selected) and Map (filters respondents by selected survey). Added sync buttons with 'Last synced' timestamps to Dashboard, Surveys List, Map, and Chat screens. Backend already supported survey filtering via survey_id parameter. All screens now reload data when survey selection changes."
