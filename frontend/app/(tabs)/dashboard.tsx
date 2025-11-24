@@ -100,6 +100,12 @@ export default function Dashboard() {
         <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>Hello, {user?.username}!</Text>
           <Text style={styles.role}>{user?.role?.toUpperCase()}</Text>
+          {selectedSurvey && (
+            <View style={styles.surveyBadge}>
+              <MaterialIcons name="poll" size={14} color="#4CAF50" />
+              <Text style={styles.surveyBadgeText}>{selectedSurvey.title}</Text>
+            </View>
+          )}
           {lastSyncTime && (
             <View style={styles.lastSyncContainer}>
               <MaterialIcons name="schedule" size={12} color="#999" />
