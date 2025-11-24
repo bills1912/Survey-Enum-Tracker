@@ -24,6 +24,7 @@ const { width, height } = Dimensions.get('window');
 export default function MapScreen() {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
+  const router = useRouter();
   const [respondents, setRespondents] = useState<Respondent[]>([]);
   const [locations, setLocations] = useState<LocationTracking[]>([]);
   const [loading, setLoading] = useState(true);
