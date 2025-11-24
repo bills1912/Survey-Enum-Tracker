@@ -213,9 +213,26 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
 def serialize_doc(doc):
-    if doc and "_id" in doc:
-        doc["id"] = str(doc["_id"])
-        del doc["_id"]
+    if not doc:
+        return doc
+    
+    if isinstance(doc, list):
+        return [serialize_doc(item) for item in doc]
+    
+    if isinstance(doc, dict):
+        if "_id" in doc:
+            doc["id"] = str(doc["_id"])
+            del doc["_id"]
+        
+        # Handle nested ObjectIds
+        for key, value in doc.items():
+            if isinstance(value, ObjectId):
+                doc[key] = str(value)
+            elif isinstance(value, dict):
+                doc[key] = serialize_doc(value)
+            elif isinstance(value, list):
+                doc[key] = [serialize_doc(item) if isinstance(item, dict) else str(item) if isinstance(item, ObjectId) else item for item in value]
+    
     return doc
 
 # Auth routes
