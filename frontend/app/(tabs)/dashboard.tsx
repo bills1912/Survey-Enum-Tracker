@@ -81,12 +81,31 @@ export default function Dashboard() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>Hello, {user?.username}!</Text>
           <Text style={styles.role}>{user?.role?.toUpperCase()}</Text>
+          {lastSyncTime && (
+            <View style={styles.lastSyncContainer}>
+              <MaterialIcons name="schedule" size={12} color="#999" />
+              <Text style={styles.lastSyncText}>
+                Last sync: {lastSyncTime.toLocaleTimeString('id-ID', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </Text>
+            </View>
+          )}
         </View>
-        <TouchableOpacity onPress={syncNow} style={styles.syncButton}>
-          <MaterialIcons name="sync" size={24} color="#2196F3" />
+        <TouchableOpacity 
+          onPress={handleSync} 
+          style={[styles.syncButton, syncing && styles.syncButtonActive]}
+          disabled={syncing || !isConnected}
+        >
+          <MaterialIcons 
+            name="sync" 
+            size={24} 
+            color={syncing || !isConnected ? '#ccc' : '#2196F3'} 
+          />
         </TouchableOpacity>
       </View>
 
