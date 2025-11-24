@@ -128,6 +128,10 @@ export const dashboardAPI = {
     const response = await api.get<DashboardStats>('/dashboard/stats');
     return response.data;
   },
+  getSurveyStats: async (surveyId: string) => {
+    const response = await api.get(`/surveys/${surveyId}/stats`);
+    return response.data;
+  },
 };
 
 export default api;
