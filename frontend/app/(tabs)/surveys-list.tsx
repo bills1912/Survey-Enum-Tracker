@@ -15,6 +15,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
+import { useSurvey } from '../../src/contexts/SurveyContext';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
