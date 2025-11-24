@@ -314,7 +314,7 @@ export default function SurveysListScreen() {
       )}
 
       <FlatList
-        data={surveys}
+        data={showAllSurveys ? surveys : surveys.filter(s => s.is_active).slice(0, 2)}
         keyExtractor={(item) => item.id}
         renderItem={renderSurvey}
         contentContainerStyle={styles.list}
@@ -332,6 +332,25 @@ export default function SurveysListScreen() {
               </TouchableOpacity>
             )}
           </View>
+        }
+        ListFooterComponent={
+          !showAllSurveys && surveys.length > 2 ? (
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => setShowAllSurveys(true)}
+            >
+              <Text style={styles.viewAllText}>Lihat Semua Survey</Text>
+              <MaterialIcons name="arrow-forward" size={20} color="#2196F3" />
+            </TouchableOpacity>
+          ) : showAllSurveys && surveys.length > 2 ? (
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => setShowAllSurveys(false)}
+            >
+              <Text style={styles.viewAllText}>Tampilkan Lebih Sedikit</Text>
+              <MaterialIcons name="arrow-upward" size={20} color="#2196F3" />
+            </TouchableOpacity>
+          ) : null
         }
       />
 
