@@ -143,6 +143,7 @@ class Respondent(BaseModel):
 class RespondentCreate(BaseModel):
     name: str
     location: RespondentLocation
+    survey_id: str
     enumerator_id: Optional[str] = None
 
 class RespondentUpdate(BaseModel):
