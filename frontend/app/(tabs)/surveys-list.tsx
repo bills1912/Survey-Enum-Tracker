@@ -275,7 +275,12 @@ export default function SurveysListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Surveys</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.greeting}>Hello, {user?.username}! 👋</Text>
+          <Text style={styles.subtitle}>
+            {surveys.length} {surveys.length === 1 ? 'Survey' : 'Surveys'} Available
+          </Text>
+        </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.syncButton}
