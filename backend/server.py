@@ -446,6 +446,113 @@ async def get_survey_stats(survey_id: str, current_user: dict = Depends(get_curr
         "completion_rate": round((completed / total * 100) if total > 0 else 0, 2)
     }
 
+# Bulk upload and assignment endpoints
+class BulkUserData(BaseModel):
+    location: str
+    supervisor_email: str
+    enumerator_email: str
+
+class BulkUploadRequest(BaseModel):
+    survey_id: str
+    users: List[BulkUserData]
+
+class AssignmentRequest(BaseModel):
+    survey_id: str
+    supervisor_ids: List[str]
+    enumerator_ids: List[str]
+
+@api_router.post("/surveys/{survey_id}/bulk-upload")
+async def bulk_upload_users(survey_id: str, data: BulkUploadRequest, current_user: dict = Depends(get_current_user)):
+    """Bulk upload supervisors and enumerators for a survey"""
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Only admins and supervisors can bulk upload")
+    
+    created_users = []
+    errors = []
+    
+    for idx, user_data in enumerate(data.users):
+        try:
+            # Create supervisor if doesn't exist
+            supervisor = await db.users.find_one({"email": user_data.supervisor_email})
+            if not supervisor:
+                supervisor_doc = {
+                    "username": user_data.supervisor_email.split('@')[0],
+                    "email": user_data.supervisor_email,
+                    "password": get_password_hash("password123"),  # Default password
+                    "role": UserRole.SUPERVISOR,
+                    "created_at": datetime.utcnow()
+                }
+                result = await db.users.insert_one(supervisor_doc)
+                supervisor_id = str(result.inserted_id)
+                created_users.append({"email": user_data.supervisor_email, "role": "supervisor", "id": supervisor_id})
+            else:
+                supervisor_id = str(supervisor["_id"])
+            
+            # Create enumerator if doesn't exist
+            enumerator = await db.users.find_one({"email": user_data.enumerator_email})
+            if not enumerator:
+                enumerator_doc = {
+                    "username": user_data.enumerator_email.split('@')[0],
+                    "email": user_data.enumerator_email,
+                    "password": get_password_hash("password123"),  # Default password
+                    "role": UserRole.ENUMERATOR,
+                    "supervisor_id": supervisor_id,
+                    "created_at": datetime.utcnow()
+                }
+                result = await db.users.insert_one(enumerator_doc)
+                enumerator_id = str(result.inserted_id)
+                created_users.append({"email": user_data.enumerator_email, "role": "enumerator", "id": enumerator_id})
+            else:
+                enumerator_id = str(enumerator["_id"])
+                # Update supervisor assignment
+                await db.users.update_one(
+                    {"_id": ObjectId(enumerator_id)},
+                    {"$set": {"supervisor_id": supervisor_id}}
+                )
+            
+            # Add to survey
+            await db.surveys.update_one(
+                {"_id": ObjectId(survey_id)},
+                {
+                    "$addToSet": {
+                        "supervisor_ids": supervisor_id,
+                        "enumerator_ids": enumerator_id
+                    }
+                }
+            )
+            
+        except Exception as e:
+            errors.append({"row": idx + 1, "error": str(e)})
+    
+    return {
+        "success": True,
+        "created_users": created_users,
+        "errors": errors,
+        "message": f"Created {len(created_users)} users with {len(errors)} errors"
+    }
+
+@api_router.post("/surveys/{survey_id}/assign")
+async def assign_users_to_survey(survey_id: str, data: AssignmentRequest, current_user: dict = Depends(get_current_user)):
+    """Manually assign existing users to a survey"""
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Only admins and supervisors can assign users")
+    
+    # Update survey with assigned users
+    await db.surveys.update_one(
+        {"_id": ObjectId(survey_id)},
+        {
+            "$addToSet": {
+                "supervisor_ids": {"$each": data.supervisor_ids},
+                "enumerator_ids": {"$each": data.enumerator_ids}
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "message": f"Assigned {len(data.supervisor_ids)} supervisors and {len(data.enumerator_ids)} enumerators"
+    }
+
 @api_router.get("/respondents/{respondent_id}")
 async def get_respondent(respondent_id: str, current_user: dict = Depends(get_current_user)):
     respondent = await db.respondents.find_one({"_id": ObjectId(respondent_id)})
