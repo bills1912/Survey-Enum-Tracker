@@ -22,6 +22,11 @@ import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
+interface Survey {
+  id: string;
+  title: string;
+}
+
 export default function MapScreen() {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
@@ -29,6 +34,9 @@ export default function MapScreen() {
   const router = useRouter();
   const [respondents, setRespondents] = useState<Respondent[]>([]);
   const [locations, setLocations] = useState<LocationTracking[]>([]);
+  const [surveys, setSurveys] = useState<Survey[]>([]);
+  const [mapSurveyFilter, setMapSurveyFilter] = useState<string>('all');
+  const [showSurveyPicker, setShowSurveyPicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -43,9 +51,14 @@ export default function MapScreen() {
   });
 
   useEffect(() => {
+    loadSurveys();
     loadMapData();
     getCurrentLocation();
-  }, [selectedSurveyId]);
+  }, []);
+
+  useEffect(() => {
+    loadMapData();
+  }, [mapSurveyFilter]);
 
   const getCurrentLocation = async () => {
     try {
