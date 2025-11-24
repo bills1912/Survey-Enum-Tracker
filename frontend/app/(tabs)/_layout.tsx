@@ -32,10 +32,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="dashboard"
           options={{
-            title: 'Dashboard',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="dashboard" size={size} color={color} />
-            ),
+            href: null, // Hidden - stats moved to survey details
           }}
         />
         <Tabs.Screen
@@ -45,6 +42,12 @@ export default function TabsLayout() {
             tabBarIcon: ({ color, size}) => (
               <MaterialIcons name="poll" size={size} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="survey-detail"
+          options={{
+            href: null, // Hidden from tabs - navigable screen
           }}
         />
         <Tabs.Screen
