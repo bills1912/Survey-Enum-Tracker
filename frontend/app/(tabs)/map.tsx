@@ -102,92 +102,152 @@ export default function MapScreen() {
     );
   }
 
+  // Render location list item
+  const renderLocationItem = ({ item }: { item: Respondent }) => (
+    <View style={styles.locationCard}>
+      <View style={styles.locationHeader}>
+        <View
+          style={[styles.statusDot, { backgroundColor: getMarkerColor(item.status) }]}
+        />
+        <View style={styles.locationInfo}>
+          <Text style={styles.locationName}>{item.name}</Text>
+          <Text style={styles.locationStatus}>{item.status.replace('_', ' ')}</Text>
+        </View>
+      </View>
+      <View style={styles.coordinatesRow}>
+        <MaterialIcons name="location-on" size={16} color="#666" />
+        <Text style={styles.coordinates}>
+          {item.location.latitude.toFixed(6)}, {item.location.longitude.toFixed(6)}
+        </Text>
+      </View>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Field Map</Text>
-        <TouchableOpacity onPress={loadMapData} style={styles.refreshButton}>
-          <MaterialIcons name="refresh" size={24} color="#2196F3" />
-        </TouchableOpacity>
+        <Text style={styles.title}>Field Locations</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+            style={styles.viewToggle}
+          >
+            <MaterialIcons
+              name={viewMode === 'map' ? 'list' : 'map'}
+              size={24}
+              color="#2196F3"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={loadMapData} style={styles.refreshButton}>
+            <MaterialIcons name="refresh" size={24} color="#2196F3" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {!isConnected && (
         <View style={styles.offlineWarning}>
           <MaterialIcons name="warning" size={20} color="#FF9800" />
-          <Text style={styles.offlineText}>Map requires internet connection</Text>
+          <Text style={styles.offlineText}>
+            {viewMode === 'map' ? 'Map requires internet connection' : 'Limited data available offline'}
+          </Text>
         </View>
       )}
 
-      <MapView
-        style={styles.map}
-        region={region}
-        showsUserLocation
-        showsMyLocationButton
-      >
-        {/* Respondent Markers */}
-        {respondents.map((respondent) => (
-          <Marker
-            key={respondent.id}
-            coordinate={{
-              latitude: respondent.location.latitude,
-              longitude: respondent.location.longitude,
-            }}
-            pinColor={getMarkerColor(respondent.status)}
-            title={respondent.name}
-            description={`Status: ${respondent.status}`}
-          >
-            <View
-              style={[
-                styles.customMarker,
-                { backgroundColor: getMarkerColor(respondent.status) },
-              ]}
-            >
-              <MaterialIcons name="person-pin" size={32} color="#fff" />
+      {viewMode === 'list' ? (
+        <FlatList
+          data={respondents}
+          keyExtractor={(item) => item.id}
+          renderItem={renderLocationItem}
+          contentContainerStyle={styles.listContainer}
+          ListHeaderComponent={
+            <View style={styles.listHeader}>
+              <MaterialIcons name="info-outline" size={24} color="#2196F3" />
+              <Text style={styles.listHeaderText}>
+                List View - {respondents.length} locations
+              </Text>
             </View>
-          </Marker>
-        ))}
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialIcons name="location-off" size={64} color="#ccc" />
+              <Text style={styles.emptyText}>No locations available</Text>
+            </View>
+          }
+        />
+      ) : (
+        <>
+          <MapView
+            style={styles.map}
+            region={region}
+            showsUserLocation
+            showsMyLocationButton
+          >
+            {/* Respondent Markers */}
+            {respondents.map((respondent) => (
+              <Marker
+                key={respondent.id}
+                coordinate={{
+                  latitude: respondent.location.latitude,
+                  longitude: respondent.location.longitude,
+                }}
+                pinColor={getMarkerColor(respondent.status)}
+                title={respondent.name}
+                description={`Status: ${respondent.status}`}
+              >
+                <View
+                  style={[
+                    styles.customMarker,
+                    { backgroundColor: getMarkerColor(respondent.status) },
+                  ]}
+                >
+                  <MaterialIcons name="person-pin" size={32} color="#fff" />
+                </View>
+              </Marker>
+            ))}
 
-        {/* Enumerator Location Markers (for Admin/Supervisor) */}
-        {user?.role !== 'enumerator' &&
-          locations.map((loc) => (
-            <Marker
-              key={loc.id}
-              coordinate={{
-                latitude: loc.latitude,
-                longitude: loc.longitude,
-              }}
-              title="Enumerator Location"
-              description={`User ID: ${loc.user_id}`}
-            >
-              <View style={[styles.customMarker, { backgroundColor: '#2196F3' }]}>
-                <MaterialIcons name="my-location" size={24} color="#fff" />
+            {/* Enumerator Location Markers (for Admin/Supervisor) */}
+            {user?.role !== 'enumerator' &&
+              locations.map((loc) => (
+                <Marker
+                  key={loc.id}
+                  coordinate={{
+                    latitude: loc.latitude,
+                    longitude: loc.longitude,
+                  }}
+                  title="Enumerator Location"
+                  description={`User ID: ${loc.user_id}`}
+                >
+                  <View style={[styles.customMarker, { backgroundColor: '#2196F3' }]}>
+                    <MaterialIcons name="my-location" size={24} color="#fff" />
+                  </View>
+                </Marker>
+              ))}
+          </MapView>
+
+          {/* Legend */}
+          <View style={styles.legend}>
+            <Text style={styles.legendTitle}>Legend</Text>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: '#F44336' }]} />
+              <Text style={styles.legendText}>Pending</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: '#FF9800' }]} />
+              <Text style={styles.legendText}>In Progress</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: '#4CAF50' }]} />
+              <Text style={styles.legendText}>Completed</Text>
+            </View>
+            {user?.role !== 'enumerator' && (
+              <View style={styles.legendItem}>
+                <View style={[styles.legendColor, { backgroundColor: '#2196F3' }]} />
+                <Text style={styles.legendText}>Enumerator</Text>
               </View>
-            </Marker>
-          ))}
-      </MapView>
-
-      {/* Legend */}
-      <View style={styles.legend}>
-        <Text style={styles.legendTitle}>Legend</Text>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: '#F44336' }]} />
-          <Text style={styles.legendText}>Pending</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: '#FF9800' }]} />
-          <Text style={styles.legendText}>In Progress</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: '#4CAF50' }]} />
-          <Text style={styles.legendText}>Completed</Text>
-        </View>
-        {user?.role !== 'enumerator' && (
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: '#2196F3' }]} />
-            <Text style={styles.legendText}>Enumerator</Text>
+            )}
           </View>
-        )}
-      </View>
+        </>
+      )}
     </View>
   );
 }
