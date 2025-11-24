@@ -402,8 +402,11 @@ async def create_respondent(respondent: RespondentCreate, current_user: dict = D
     return respondent_dict
 
 @api_router.get("/respondents")
-async def get_respondents(current_user: dict = Depends(get_current_user)):
+async def get_respondents(survey_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
     query = {}
+    if survey_id:
+        query["survey_id"] = survey_id
+        
     if current_user["role"] == UserRole.ENUMERATOR:
         query["enumerator_id"] = current_user["id"]
     elif current_user["role"] == UserRole.SUPERVISOR:
@@ -414,6 +417,31 @@ async def get_respondents(current_user: dict = Depends(get_current_user)):
     
     respondents = await db.respondents.find(query).to_list(1000)
     return [serialize_doc(r) for r in respondents]
+
+@api_router.get("/surveys/{survey_id}/stats")
+async def get_survey_stats(survey_id: str, current_user: dict = Depends(get_current_user)):
+    query = {"survey_id": survey_id}
+    
+    if current_user["role"] == UserRole.ENUMERATOR:
+        query["enumerator_id"] = current_user["id"]
+    elif current_user["role"] == UserRole.SUPERVISOR:
+        enumerators = await db.users.find({"supervisor_id": current_user["id"]}).to_list(1000)
+        enumerator_ids = [str(e["_id"]) for e in enumerators]
+        query["enumerator_id"] = {"$in": enumerator_ids}
+    
+    total = await db.respondents.count_documents(query)
+    pending = await db.respondents.count_documents({**query, "status": "pending"})
+    in_progress = await db.respondents.count_documents({**query, "status": "in_progress"})
+    completed = await db.respondents.count_documents({**query, "status": "completed"})
+    
+    return {
+        "survey_id": survey_id,
+        "total_respondents": total,
+        "pending": pending,
+        "in_progress": in_progress,
+        "completed": completed,
+        "completion_rate": round((completed / total * 100) if total > 0 else 0, 2)
+    }
 
 @api_router.get("/respondents/{respondent_id}")
 async def get_respondent(respondent_id: str, current_user: dict = Depends(get_current_user)):
