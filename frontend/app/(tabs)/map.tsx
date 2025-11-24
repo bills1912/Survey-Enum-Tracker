@@ -212,8 +212,33 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Field Locations</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Field Locations</Text>
+          {lastSyncTime && (
+            <View style={styles.lastSyncContainer}>
+              <MaterialIcons name="schedule" size={12} color="#999" />
+              <Text style={styles.lastSyncText}>
+                Last sync: {lastSyncTime.toLocaleTimeString('id-ID', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </Text>
+            </View>
+          )}
+        </View>
         <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.syncButton}
+            onPress={handleSync}
+            disabled={syncing || !isConnected}
+          >
+            <MaterialIcons 
+              name="sync" 
+              size={24} 
+              color={syncing || !isConnected ? '#ccc' : '#2196F3'}
+              style={syncing ? styles.spinning : null}
+            />
+          </TouchableOpacity>
           {user?.role === 'enumerator' && (
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/add-respondent')}
@@ -234,9 +259,6 @@ export default function MapScreen() {
               size={24}
               color="#2196F3"
             />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={loadMapData} style={styles.refreshButton}>
-            <MaterialIcons name="refresh" size={24} color="#2196F3" />
           </TouchableOpacity>
         </View>
       </View>
