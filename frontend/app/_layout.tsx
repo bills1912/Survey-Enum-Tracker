@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack } from 'expo-router';
+import { Slot } from 'expo-router';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { NetworkProvider } from '../src/contexts/NetworkContext';
 import { SurveyProvider } from '../src/contexts/SurveyContext';
@@ -11,11 +11,7 @@ export default function RootLayout() {
       <NetworkProvider>
         <SurveyProvider>
           <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
+          <Slot />
         </SurveyProvider>
       </NetworkProvider>
     </AuthProvider>
