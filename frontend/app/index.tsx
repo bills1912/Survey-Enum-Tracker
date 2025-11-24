@@ -18,8 +18,8 @@ export default function Index() {
       // Redirect to login
       router.replace('/(auth)/login');
     } else if (user && !inTabsGroup) {
-      // Redirect to main app
-      router.replace('/(tabs)/dashboard');
+      // Redirect to surveys list (home screen)
+      router.replace('/(tabs)/surveys-list');
     }
   }, [user, loading, segments]);
 
