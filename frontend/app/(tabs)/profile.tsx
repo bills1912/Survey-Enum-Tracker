@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Alert,
   Switch,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
