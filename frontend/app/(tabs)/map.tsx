@@ -506,8 +506,8 @@ export default function MapScreen() {
             selectedMarker={
               selectedRespondent
                 ? {
-                    latitude: selectedRespondent.location.latitude,
-                    longitude: selectedRespondent.location.longitude,
+                    latitude: selectedRespondent.location?.latitude || selectedRespondent.latitude,
+                    longitude: selectedRespondent.location?.longitude || selectedRespondent.longitude,
                   }
                 : undefined
             }
