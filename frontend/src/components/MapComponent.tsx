@@ -55,6 +55,9 @@ export function MapComponent(props: MapComponentProps) {
         <Text style={styles.webInfo}>
           Using Expo Go: Maps may not work. Build a development build to enable maps.
         </Text>
+        <Text style={[styles.webInfo, { marginTop: 24, fontSize: 14, color: '#2196F3' }]}>
+          💡 Tap the list icon (☰) at the top to view locations in list format
+        </Text>
       </View>
     );
   }
