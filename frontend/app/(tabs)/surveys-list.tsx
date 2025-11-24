@@ -314,7 +314,7 @@ export default function SurveysListScreen() {
       )}
 
       <FlatList
-        data={showAllSurveys ? surveys : surveys.filter(s => s.is_active).slice(0, 2)}
+        data={surveys.filter(s => s.is_active).slice(0, 2)}
         keyExtractor={(item) => item.id}
         renderItem={renderSurvey}
         contentContainerStyle={styles.list}
