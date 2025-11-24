@@ -270,6 +270,16 @@ export default function MapScreen() {
                 : undefined
             }
             zoom={13}
+            selectedMarker={
+              selectedRespondent
+                ? {
+                    latitude: selectedRespondent.location.latitude,
+                    longitude: selectedRespondent.location.longitude,
+                  }
+                : undefined
+            }
+            userLocation={myLocation}
+            showRouting={!!selectedRespondent && user?.role === 'enumerator'}
           />
 
           {/* Legend */}
