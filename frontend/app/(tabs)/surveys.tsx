@@ -56,7 +56,7 @@ export default function Surveys() {
     loadRespondents();
   };
 
-  const updateStatus = async (respondent: Respondent, newStatus: string) => {
+  const updateStatus = async (respondent: Respondent, newStatus: 'pending' | 'in_progress' | 'completed') => {
     try {
       if (isConnected) {
         await respondentAPI.updateRespondent(respondent.id, { status: newStatus });
@@ -64,7 +64,7 @@ export default function Surveys() {
         // Save locally when offline
         await storageService.savePendingRespondent({
           ...respondent,
-          status: newStatus as any,
+          status: newStatus,
         });
       }
 
