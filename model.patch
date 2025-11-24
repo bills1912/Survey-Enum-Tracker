@@ -1,190 +1,217 @@
 diff --git a/frontend/app/(tabs)/map.tsx b/frontend/app/(tabs)/map.tsx
-index 08d5472..e45dafe 100644
+index cf702f7..19a83cc 100644
 --- a/frontend/app/(tabs)/map.tsx
 +++ b/frontend/app/(tabs)/map.tsx
-@@ -9,6 +9,7 @@ import {
-   Dimensions,
-   FlatList,
-   Platform,
+@@ -3,13 +3,14 @@ import {
+   View,
+   Text,
+   StyleSheet,
+-  ActivityIndicator,
++  ScrollView,
++  FlatList,
+   TouchableOpacity,
+   Alert,
++  ActivityIndicator,
 +  Modal,
+   Dimensions,
+-  FlatList,
+   Platform,
+-  Modal,
  } from 'react-native';
  import { MaterialIcons } from '@expo/vector-icons';
  import { useAuth } from '../../src/contexts/AuthContext';
-@@ -19,6 +20,8 @@ import { Respondent, LocationTracking } from '../../src/types';
- import * as Location from 'expo-location';
- import LeafletMap from '../../src/components/LeafletMap';
- import { useRouter } from 'expo-router';
-+import AsyncStorage from '@react-native-async-storage/async-storage';
-+import axios from 'axios';
- 
- const { width, height } = Dimensions.get('window');
- 
 diff --git a/model.patch b/model.patch
-index cdebf3e..e69de29 100644
+index 556b691..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,164 +0,0 @@
--diff --git a/backend/server.py b/backend/server.py
--index ae827b9..ef41a37 100644
----- a/backend/server.py
--+++ b/backend/server.py
--@@ -213,9 +213,26 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
--         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+@@ -1,190 +0,0 @@
+-diff --git a/frontend/app/(tabs)/map.tsx b/frontend/app/(tabs)/map.tsx
+-index 08d5472..e45dafe 100644
+---- a/frontend/app/(tabs)/map.tsx
+-+++ b/frontend/app/(tabs)/map.tsx
+-@@ -9,6 +9,7 @@ import {
+-   Dimensions,
+-   FlatList,
+-   Platform,
+-+  Modal,
+- } from 'react-native';
+- import { MaterialIcons } from '@expo/vector-icons';
+- import { useAuth } from '../../src/contexts/AuthContext';
+-@@ -19,6 +20,8 @@ import { Respondent, LocationTracking } from '../../src/types';
+- import * as Location from 'expo-location';
+- import LeafletMap from '../../src/components/LeafletMap';
+- import { useRouter } from 'expo-router';
+-+import AsyncStorage from '@react-native-async-storage/async-storage';
+-+import axios from 'axios';
 - 
-- def serialize_doc(doc):
---    if doc and "_id" in doc:
---        doc["id"] = str(doc["_id"])
---        del doc["_id"]
--+    if not doc:
--+        return doc
--+    
--+    if isinstance(doc, list):
--+        return [serialize_doc(item) for item in doc]
--+    
--+    if isinstance(doc, dict):
--+        if "_id" in doc:
--+            doc["id"] = str(doc["_id"])
--+            del doc["_id"]
--+        
--+        # Handle nested ObjectIds
--+        for key, value in doc.items():
--+            if isinstance(value, ObjectId):
--+                doc[key] = str(value)
--+            elif isinstance(value, dict):
--+                doc[key] = serialize_doc(value)
--+            elif isinstance(value, list):
--+                doc[key] = [serialize_doc(item) if isinstance(item, dict) else str(item) if isinstance(item, ObjectId) else item for item in value]
--+    
--     return doc
+- const { width, height } = Dimensions.get('window');
 - 
-- # Auth routes
--@@ -363,13 +380,16 @@ async def create_location(location: LocationTrackingCreate, current_user: dict =
--     result = await db.locations.insert_one(location_dict)
--     location_dict["id"] = str(result.inserted_id)
--     
--+    # Serialize for response
--+    serialized_location = serialize_doc(location_dict.copy())
--+    
--     # Broadcast location update
--     await manager.broadcast({
--         "type": "location_update",
---        "data": location_dict
--+        "data": serialized_location
--     })
--     
---    return location_dict
--+    return serialized_location
-- 
-- @api_router.post("/locations/batch")
-- async def create_locations_batch(batch: LocationTrackingBatch, current_user: dict = Depends(get_current_user)):
--@@ -539,7 +559,7 @@ async def create_faq(faq: FAQItem, current_user: dict = Depends(get_current_user
--     result = await db.faqs.insert_one(faq_dict)
--     faq_dict["id"] = str(result.inserted_id)
--     
---    return faq_dict
--+    return serialize_doc(faq_dict)
-- 
-- # Dashboard stats
-- @api_router.get("/dashboard/stats", response_model=DashboardStats)
--diff --git a/debug_test.py b/debug_test.py
--new file mode 100644
--index 0000000..bd59451
----- /dev/null
--+++ b/debug_test.py
--@@ -0,0 +1,95 @@
--+#!/usr/bin/env python3
--+"""
--+Debug specific failing endpoints
--+"""
--+
--+import requests
--+import json
--+
--+BASE_URL = "https://datahunter-13.preview.emergentagent.com/api"
--+
--+# Login as admin first
--+login_data = {"email": "admin@fieldtracker.com", "password": "admin123"}
--+response = requests.post(f"{BASE_URL}/auth/login", json=login_data, timeout=30)
--+if response.status_code == 200:
--+    token = response.json()["access_token"]
--+    print(f"✅ Login successful, token: {token[:20]}...")
--+else:
--+    print(f"❌ Login failed: {response.status_code}")
--+    exit(1)
--+
--+headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
--+
--+# Test 1: Registration
--+print("\n=== Testing Registration ===")
--+new_user = {
--+    "username": "debuguser",
--+    "email": "debuguser@test.com",
--+    "password": "test123",
--+    "role": "enumerator"
--+}
--+
--+try:
--+    response = requests.post(f"{BASE_URL}/auth/register", json=new_user, timeout=30)
--+    print(f"Registration status: {response.status_code}")
--+    if response.status_code != 200:
--+        print(f"Response: {response.text}")
--+except Exception as e:
--+    print(f"Registration error: {e}")
--+
--+# Test 2: Create location
--+print("\n=== Testing Create Location ===")
--+location_data = {
--+    "user_id": "test_user_id",
--+    "latitude": 40.7128,
--+    "longitude": -74.0060
--+}
--+
--+try:
--+    response = requests.post(f"{BASE_URL}/locations", json=location_data, headers=headers, timeout=30)
--+    print(f"Create location status: {response.status_code}")
--+    if response.status_code != 200:
--+        print(f"Response: {response.text}")
--+except Exception as e:
--+    print(f"Create location error: {e}")
--+
--+# Test 3: Create AI message
--+print("\n=== Testing Create AI Message ===")
--+ai_message = {
--+    "message_type": "ai",
--+    "content": "Test AI message"
--+}
--+
--+try:
--+    response = requests.post(f"{BASE_URL}/messages", json=ai_message, headers=headers, timeout=30)
--+    print(f"Create AI message status: {response.status_code}")
--+    if response.status_code != 200:
--+        print(f"Response: {response.text}")
--+except Exception as e:
--+    print(f"Create AI message error: {e}")
--+
--+# Test 4: Create FAQ
--+print("\n=== Testing Create FAQ ===")
--+faq_data = {
--+    "question": "Test question?",
--+    "answer": "Test answer",
--+    "category": "test"
--+}
--+
--+try:
--+    response = requests.post(f"{BASE_URL}/faqs", json=faq_data, headers=headers, timeout=30)
--+    print(f"Create FAQ status: {response.status_code}")
--+    if response.status_code != 200:
--+        print(f"Response: {response.text}")
--+except Exception as e:
--+    print(f"Create FAQ error: {e}")
--+
--+# Test 5: Unauthorized request
--+print("\n=== Testing Unauthorized Request ===")
--+try:
--+    response = requests.get(f"{BASE_URL}/auth/me", timeout=30)  # No token
--+    print(f"Unauthorized status: {response.status_code}")
--+    if response.status_code != 401:
--+        print(f"Response: {response.text}")
--+except Exception as e:
--+    print(f"Unauthorized request error: {e}")
--\ No newline at end of file
+-diff --git a/model.patch b/model.patch
+-index cdebf3e..e69de29 100644
+---- a/model.patch
+-+++ b/model.patch
+-@@ -1,164 +0,0 @@
+--diff --git a/backend/server.py b/backend/server.py
+--index ae827b9..ef41a37 100644
+----- a/backend/server.py
+--+++ b/backend/server.py
+--@@ -213,9 +213,26 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
+--         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+-- 
+-- def serialize_doc(doc):
+---    if doc and "_id" in doc:
+---        doc["id"] = str(doc["_id"])
+---        del doc["_id"]
+--+    if not doc:
+--+        return doc
+--+    
+--+    if isinstance(doc, list):
+--+        return [serialize_doc(item) for item in doc]
+--+    
+--+    if isinstance(doc, dict):
+--+        if "_id" in doc:
+--+            doc["id"] = str(doc["_id"])
+--+            del doc["_id"]
+--+        
+--+        # Handle nested ObjectIds
+--+        for key, value in doc.items():
+--+            if isinstance(value, ObjectId):
+--+                doc[key] = str(value)
+--+            elif isinstance(value, dict):
+--+                doc[key] = serialize_doc(value)
+--+            elif isinstance(value, list):
+--+                doc[key] = [serialize_doc(item) if isinstance(item, dict) else str(item) if isinstance(item, ObjectId) else item for item in value]
+--+    
+--     return doc
+-- 
+-- # Auth routes
+--@@ -363,13 +380,16 @@ async def create_location(location: LocationTrackingCreate, current_user: dict =
+--     result = await db.locations.insert_one(location_dict)
+--     location_dict["id"] = str(result.inserted_id)
+--     
+--+    # Serialize for response
+--+    serialized_location = serialize_doc(location_dict.copy())
+--+    
+--     # Broadcast location update
+--     await manager.broadcast({
+--         "type": "location_update",
+---        "data": location_dict
+--+        "data": serialized_location
+--     })
+--     
+---    return location_dict
+--+    return serialized_location
+-- 
+-- @api_router.post("/locations/batch")
+-- async def create_locations_batch(batch: LocationTrackingBatch, current_user: dict = Depends(get_current_user)):
+--@@ -539,7 +559,7 @@ async def create_faq(faq: FAQItem, current_user: dict = Depends(get_current_user
+--     result = await db.faqs.insert_one(faq_dict)
+--     faq_dict["id"] = str(result.inserted_id)
+--     
+---    return faq_dict
+--+    return serialize_doc(faq_dict)
+-- 
+-- # Dashboard stats
+-- @api_router.get("/dashboard/stats", response_model=DashboardStats)
+--diff --git a/debug_test.py b/debug_test.py
+--new file mode 100644
+--index 0000000..bd59451
+----- /dev/null
+--+++ b/debug_test.py
+--@@ -0,0 +1,95 @@
+--+#!/usr/bin/env python3
+--+"""
+--+Debug specific failing endpoints
+--+"""
+--+
+--+import requests
+--+import json
+--+
+--+BASE_URL = "https://datahunter-13.preview.emergentagent.com/api"
+--+
+--+# Login as admin first
+--+login_data = {"email": "admin@fieldtracker.com", "password": "admin123"}
+--+response = requests.post(f"{BASE_URL}/auth/login", json=login_data, timeout=30)
+--+if response.status_code == 200:
+--+    token = response.json()["access_token"]
+--+    print(f"✅ Login successful, token: {token[:20]}...")
+--+else:
+--+    print(f"❌ Login failed: {response.status_code}")
+--+    exit(1)
+--+
+--+headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+--+
+--+# Test 1: Registration
+--+print("\n=== Testing Registration ===")
+--+new_user = {
+--+    "username": "debuguser",
+--+    "email": "debuguser@test.com",
+--+    "password": "test123",
+--+    "role": "enumerator"
+--+}
+--+
+--+try:
+--+    response = requests.post(f"{BASE_URL}/auth/register", json=new_user, timeout=30)
+--+    print(f"Registration status: {response.status_code}")
+--+    if response.status_code != 200:
+--+        print(f"Response: {response.text}")
+--+except Exception as e:
+--+    print(f"Registration error: {e}")
+--+
+--+# Test 2: Create location
+--+print("\n=== Testing Create Location ===")
+--+location_data = {
+--+    "user_id": "test_user_id",
+--+    "latitude": 40.7128,
+--+    "longitude": -74.0060
+--+}
+--+
+--+try:
+--+    response = requests.post(f"{BASE_URL}/locations", json=location_data, headers=headers, timeout=30)
+--+    print(f"Create location status: {response.status_code}")
+--+    if response.status_code != 200:
+--+        print(f"Response: {response.text}")
+--+except Exception as e:
+--+    print(f"Create location error: {e}")
+--+
+--+# Test 3: Create AI message
+--+print("\n=== Testing Create AI Message ===")
+--+ai_message = {
+--+    "message_type": "ai",
+--+    "content": "Test AI message"
+--+}
+--+
+--+try:
+--+    response = requests.post(f"{BASE_URL}/messages", json=ai_message, headers=headers, timeout=30)
+--+    print(f"Create AI message status: {response.status_code}")
+--+    if response.status_code != 200:
+--+        print(f"Response: {response.text}")
+--+except Exception as e:
+--+    print(f"Create AI message error: {e}")
+--+
+--+# Test 4: Create FAQ
+--+print("\n=== Testing Create FAQ ===")
+--+faq_data = {
+--+    "question": "Test question?",
+--+    "answer": "Test answer",
+--+    "category": "test"
+--+}
+--+
+--+try:
+--+    response = requests.post(f"{BASE_URL}/faqs", json=faq_data, headers=headers, timeout=30)
+--+    print(f"Create FAQ status: {response.status_code}")
+--+    if response.status_code != 200:
+--+        print(f"Response: {response.text}")
+--+except Exception as e:
+--+    print(f"Create FAQ error: {e}")
+--+
+--+# Test 5: Unauthorized request
+--+print("\n=== Testing Unauthorized Request ===")
+--+try:
+--+    response = requests.get(f"{BASE_URL}/auth/me", timeout=30)  # No token
+--+    print(f"Unauthorized status: {response.status_code}")
+--+    if response.status_code != 401:
+--+        print(f"Response: {response.text}")
+--+except Exception as e:
+--+    print(f"Unauthorized request error: {e}")
+--\ No newline at end of file
