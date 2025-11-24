@@ -20,12 +20,21 @@ interface LeafletMapProps {
   showRouting?: boolean;
 }
 
-export default function LeafletMap({ markers, center, zoom = 13 }: LeafletMapProps) {
+export default function LeafletMap({ 
+  markers, 
+  center, 
+  zoom = 13, 
+  selectedMarker,
+  userLocation,
+  showRouting = false 
+}: LeafletMapProps) {
   const webViewRef = useRef<WebView>(null);
 
-  const defaultCenter = center || (markers.length > 0 
+  const defaultCenter = selectedMarker || center || (markers.length > 0 
     ? { latitude: markers[0].latitude, longitude: markers[0].longitude }
     : { latitude: -6.2088, longitude: 106.8456 });
+  
+  const zoomLevel = selectedMarker ? 16 : zoom;
 
   const htmlContent = `
 <!DOCTYPE html>
