@@ -726,6 +726,12 @@ async def root():
 # Include router
 app.include_router(api_router)
 
+# Serve web dashboard
+@app.get("/dashboard")
+async def serve_dashboard():
+    dashboard_path = Path(__file__).parent.parent / "web-dashboard" / "index.html"
+    return FileResponse(dashboard_path)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
