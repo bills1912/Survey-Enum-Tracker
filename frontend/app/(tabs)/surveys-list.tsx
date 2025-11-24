@@ -45,6 +45,7 @@ export default function SurveysListScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [surveyStats, setSurveyStats] = useState<{[key: string]: any}>({});
 
   // Form state for creating survey
   const [title, setTitle] = useState('');
@@ -56,6 +57,12 @@ export default function SurveysListScreen() {
   useEffect(() => {
     loadSurveys();
   }, []);
+
+  useEffect(() => {
+    if (surveys.length > 0) {
+      loadSurveyStats();
+    }
+  }, [surveys]);
 
   const loadSurveys = async () => {
     if (!isConnected) {
