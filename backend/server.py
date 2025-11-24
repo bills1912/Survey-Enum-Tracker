@@ -380,13 +380,16 @@ async def create_location(location: LocationTrackingCreate, current_user: dict =
     result = await db.locations.insert_one(location_dict)
     location_dict["id"] = str(result.inserted_id)
     
+    # Serialize for response
+    serialized_location = serialize_doc(location_dict.copy())
+    
     # Broadcast location update
     await manager.broadcast({
         "type": "location_update",
-        "data": location_dict
+        "data": serialized_location
     })
     
-    return location_dict
+    return serialized_location
 
 @api_router.post("/locations/batch")
 async def create_locations_batch(batch: LocationTrackingBatch, current_user: dict = Depends(get_current_user)):
