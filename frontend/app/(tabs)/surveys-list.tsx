@@ -555,6 +555,27 @@ const styles = StyleSheet.create({
   selectedBadge: {
     marginLeft: 8,
   },
+  statsPreview: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 12,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#666',
+    marginTop: 4,
+  },
   surveyFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
