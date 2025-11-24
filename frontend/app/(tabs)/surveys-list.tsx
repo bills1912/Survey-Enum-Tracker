@@ -223,25 +223,7 @@ export default function SurveysListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>My Surveys</Text>
-          <Text style={styles.subtitle}>
-            {user?.role === 'admin' ? 'Manage all surveys' : 
-             user?.role === 'supervisor' ? 'Your assigned surveys' :
-             'Your survey activities'}
-          </Text>
-          {lastSyncTime && (
-            <View style={styles.lastSyncContainer}>
-              <MaterialIcons name="schedule" size={12} color="#999" />
-              <Text style={styles.lastSyncText}>
-                Last sync: {lastSyncTime.toLocaleTimeString('id-ID', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
-              </Text>
-            </View>
-          )}
-        </View>
+        <Text style={styles.title}>Surveys</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.syncButton}
