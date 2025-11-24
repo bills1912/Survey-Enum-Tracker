@@ -697,16 +697,19 @@ If the question is not related to field data collection, politely decline to ans
             message_dict["response"] = "Sorry, I'm unable to process your question at the moment. Please try again later."
     
     result = await db.messages.insert_one(message_dict)
-    message_dict["id"] = str(result.inserted_id)
+    message_dict["_id"] = result.inserted_id
+    
+    # Serialize the document to convert ObjectId to string
+    serialized_message = serialize_doc(message_dict)
     
     # Notify receiver if supervisor message
     if message.message_type == MessageType.SUPERVISOR and message.receiver_id:
         await manager.send_personal_message({
             "type": "new_message",
-            "data": message_dict
+            "data": serialized_message
         }, message.receiver_id)
     
-    return message_dict
+    return serialized_message
 
 @api_router.post("/messages/batch")
 async def create_messages_batch(batch: MessageBatch, current_user: dict = Depends(get_current_user)):
