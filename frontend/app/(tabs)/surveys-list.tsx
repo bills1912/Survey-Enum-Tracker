@@ -77,11 +77,35 @@ export default function SurveysListScreen() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSurveys(response.data);
+      setLastSyncTime(new Date());
     } catch (error) {
       console.error('Error loading surveys:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!isConnected) {
+      Alert.alert('Offline', 'Cannot sync while offline. Please connect to the internet.');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/surveys`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSurveys(response.data);
+      setLastSyncTime(new Date());
+      Alert.alert('Success', `Synced successfully! Found ${response.data.length} surveys.`);
+    } catch (error) {
+      console.error('Error syncing surveys:', error);
+      Alert.alert('Error', 'Failed to sync surveys. Please try again.');
+    } finally {
+      setSyncing(false);
     }
   };
 
