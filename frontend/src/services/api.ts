@@ -50,8 +50,10 @@ export const userAPI = {
 
 // Respondent APIs
 export const respondentAPI = {
-  getRespondents: async () => {
-    const response = await api.get<Respondent[]>('/respondents');
+  getRespondents: async (surveyId?: string) => {
+    const response = await api.get<Respondent[]>('/respondents', {
+      params: surveyId ? { survey_id: surveyId } : {},
+    });
     return response.data;
   },
   getRespondent: async (id: string) => {
