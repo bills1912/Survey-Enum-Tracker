@@ -309,6 +309,54 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Implemented network status bar with online/offline indicator and pending sync count"
+  
+  - task: "Multi-Survey Context & Selection"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/contexts/SurveyContext.tsx, /app/frontend/app/_layout.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created SurveyContext to manage selected survey globally. Integrated into root layout. Stores selected survey in AsyncStorage and provides it to all screens."
+  
+  - task: "Survey-Filtered Dashboard Stats"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/(tabs)/dashboard.tsx, /app/frontend/src/services/api.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated Dashboard to show survey-specific stats when a survey is selected. Added survey badge in header. Reloads data when selected survey changes. Uses /surveys/{survey_id}/stats endpoint."
+  
+  - task: "Survey-Filtered Map Respondents"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/(tabs)/map.tsx, /app/frontend/src/services/api.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated Map screen to filter respondents by selected survey. Passes survey_id parameter to respondents API. Reloads map data when selected survey changes."
+  
+  - task: "Manual Sync Buttons (All Screens)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/(tabs)/dashboard.tsx, /app/frontend/app/(tabs)/surveys-list.tsx, /app/frontend/app/(tabs)/map.tsx, /app/frontend/app/(tabs)/chat.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added sync buttons with 'Last synced' timestamps to Dashboard, Surveys List, Map, and Chat screens. Users can manually refresh data. Sync buttons are disabled when offline."
 
 metadata:
   created_by: "main_agent"
