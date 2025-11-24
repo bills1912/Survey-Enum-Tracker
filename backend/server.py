@@ -723,14 +723,16 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 async def root():
     return {"message": "Field Data Collection API", "status": "online"}
 
-# Include router
-app.include_router(api_router)
-
-# Serve web dashboard
+# Serve web dashboard (outside API router)
 @app.get("/dashboard")
 async def serve_dashboard():
     dashboard_path = Path(__file__).parent.parent / "web-dashboard" / "index.html"
+    if not dashboard_path.exists():
+        raise HTTPException(status_code=404, detail="Dashboard not found")
     return FileResponse(dashboard_path)
+
+# Include router
+app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
