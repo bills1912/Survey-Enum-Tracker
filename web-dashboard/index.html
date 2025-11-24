@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Tracker - Leadership Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .filter-group select {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 180px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .stat-card .change {
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .chart-container h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .refresh-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        .refresh-btn:hover {
+            background: #1976D2;
+        }
+        
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #E8F5E9;
+            color: #4CAF50;
+        }
+        
+        .status-inactive {
+            background: #FFF3E0;
+            color: #FF9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ Field Data Collection - Leadership Dashboard</h1>
+        <p>Real-time monitoring and analytics for field surveys</p>
+    </div>
+
+    <div class="container">
+        <div class="filters">
+            <div class="filter-group">
+                <label>Region Level</label>
+                <select id="regionLevel" onchange="filterData()">
+                    <option value="all">All Levels</option>
+                    <option value="national">National</option>
+                    <option value="provincial">Provincial</option>
+                    <option value="regency">Regency/City</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Survey</label>
+                <select id="surveyFilter" onchange="filterData()">
+                    <option value="all">All Surveys</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="statusFilter" onchange="filterData()">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            
+            <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon" style="background: #E3F2FD; color: #2196F3;">📊</div>
+                <h3>Total Surveys</h3>
+                <div class="value" id="totalSurveys">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon" style="background: #E8F5E9; color: #4CAF50;">✅</div>
+                <h3>Completed</h3>
+                <div class="value" id="completedCount">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon" style="background: #FFF3E0; color: #FF9800;">⏳</div>
+                <h3>In Progress</h3>
+                <div class="value" id="inProgressCount">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon" style="background: #F3E5F5; color: #9C27B0;">👥</div>
+                <h3>Active Enumerators</h3>
+                <div class="value" id="activeEnumerators">0</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📈 Survey Progress Overview</h2>
+            <canvas id="progressChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>🗺️ Real-time Field Worker Locations</h2>
+            <div id="map"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #F44336;"></div>
+                    <span>Pending</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF9800;"></div>
+                    <span>In Progress</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    <span>Completed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3;"></div>
+                    <span>Enumerator</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h2 style="margin-bottom: 20px;">📋 Enumerator Activity</h2>
+            <table id="enumeratorTable">
+                <thead>
+                    <tr>
+                        <th>Enumerator</th>
+                        <th>Survey</th>
+                        <th>Assigned</th>
+                        <th>Completed</th>
+                        <th>Progress</th>
+                        <th>Last Active</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="enumeratorTableBody">
+                    <tr>
+                        <td colspan="7" class="loading">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://fieldtracker-15.preview.emergentagent.com/api';
+        let map;
+        let progressChart;
+        
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([-6.2088, 106.8456], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+        
+        // Load dashboard data
+        async function loadData() {
+            try {
+                // This would need authentication in production
+                const [stats, respondents, locations] = await Promise.all([
+                    fetch(`${API_URL}/dashboard/stats`).then(r => r.json()).catch(() => ({
+                        total_respondents: 0,
+                        pending: 0,
+                        in_progress: 0,
+                        completed: 0,
+                        active_enumerators: 0,
+                        total_enumerators: 0
+                    })),
+                    fetch(`${API_URL}/respondents`).then(r => r.json()).catch(() => []),
+                    fetch(`${API_URL}/locations/latest`).then(r => r.json()).catch(() => [])
+                ]);
+                
+                // Update stats
+                document.getElementById('totalSurveys').textContent = stats.total_respondents || 0;
+                document.getElementById('completedCount').textContent = stats.completed || 0;
+                document.getElementById('inProgressCount').textContent = stats.in_progress || 0;
+                document.getElementById('activeEnumerators').textContent = stats.active_enumerators || 0;
+                
+                // Update chart
+                updateChart(stats);
+                
+                // Update map
+                updateMap(respondents, locations);
+                
+                // Update table
+                updateTable(respondents, locations);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Failed to load dashboard data. Please check your internet connection.');
+            }
+        }
+        
+        function updateChart(stats) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            if (progressChart) {
+                progressChart.destroy();
+            }
+            
+            progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Pending'],
+                    datasets: [{
+                        data: [stats.completed || 0, stats.in_progress || 0, stats.pending || 0],
+                        backgroundColor: ['#4CAF50', '#FF9800', '#F44336'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateMap(respondents, locations) {
+            // Clear existing markers
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            // Add respondent markers
+            respondents.forEach(r => {
+                const color = r.status === 'completed' ? '#4CAF50' : 
+                             r.status === 'in_progress' ? '#FF9800' : '#F44336';
+                
+                L.circleMarker([r.location.latitude, r.location.longitude], {
+                    radius: 8,
+                    fillColor: color,
+                    color: 'white',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map).bindPopup(`<b>${r.name}</b><br/>Status: ${r.status}`);
+            });
+            
+            // Add enumerator markers
+            locations.forEach(loc => {
+                L.circleMarker([loc.latitude, loc.longitude], {
+                    radius: 10,
+                    fillColor: '#2196F3',
+                    color: 'white',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map).bindPopup(`<b>Enumerator</b><br/>Last update: ${new Date(loc.timestamp).toLocaleString()}`);
+            });
+            
+            // Fit bounds if we have data
+            if (respondents.length > 0) {
+                const bounds = respondents.map(r => [r.location.latitude, r.location.longitude]);
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+        
+        function updateTable(respondents, locations) {
+            const tbody = document.getElementById('enumeratorTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">No data available</td></tr>';
+            
+            // Group by enumerator
+            const enumeratorData = {};
+            respondents.forEach(r => {
+                if (!r.enumerator_id) return;
+                if (!enumeratorData[r.enumerator_id]) {
+                    enumeratorData[r.enumerator_id] = {
+                        id: r.enumerator_id,
+                        assigned: 0,
+                        completed: 0,
+                        inProgress: 0
+                    };
+                }
+                enumeratorData[r.enumerator_id].assigned++;
+                if (r.status === 'completed') enumeratorData[r.enumerator_id].completed++;
+                if (r.status === 'in_progress') enumeratorData[r.enumerator_id].inProgress++;
+            });
+            
+            if (Object.keys(enumeratorData).length === 0) return;
+            
+            tbody.innerHTML = '';
+            Object.values(enumeratorData).forEach(enum_data => {
+                const loc = locations.find(l => l.user_id === enum_data.id);
+                const progress = enum_data.assigned > 0 ? Math.round((enum_data.completed / enum_data.assigned) * 100) : 0;
+                const isActive = loc && (new Date() - new Date(loc.timestamp)) < 600000; // 10 minutes
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>Enumerator ${enum_data.id.substring(0, 8)}</td>
+                        <td>Field Survey</td>
+                        <td>${enum_data.assigned}</td>
+                        <td>${enum_data.completed}</td>
+                        <td>${progress}%</td>
+                        <td>${loc ? new Date(loc.timestamp).toLocaleString() : 'N/A'}</td>
+                        <td><span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span></td>
+                    </tr>
+                `;
+            });
+        }
+        
+        function filterData() {
+            // Implement filtering logic here
+            loadData();
+        }
+        
+        // Initialize on load
+        window.onload = () => {
+            initMap();
+            loadData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadData, 30000);
+        };
+    </script>
+</body>
+</html>
