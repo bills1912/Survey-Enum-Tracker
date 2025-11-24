@@ -341,6 +341,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
   locationDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
