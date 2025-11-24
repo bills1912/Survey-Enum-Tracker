@@ -259,6 +259,22 @@ const styles = StyleSheet.create({
   syncButtonActive: {
     backgroundColor: '#BBDEFB',
   },
+  surveyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 6,
+    alignSelf: 'flex-start',
+  },
+  surveyBadgeText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
   lastSyncContainer: {
     flexDirection: 'row',
     alignItems: 'center',
