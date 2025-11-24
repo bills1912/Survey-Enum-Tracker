@@ -36,7 +36,14 @@ export default function Dashboard() {
     }
 
     try {
-      const data = await dashboardAPI.getStats();
+      let data;
+      if (selectedSurveyId) {
+        // Load survey-specific stats
+        data = await dashboardAPI.getSurveyStats(selectedSurveyId);
+      } else {
+        // Load overall stats
+        data = await dashboardAPI.getStats();
+      }
       setStats(data);
       setLastSyncTime(new Date());
     } catch (error) {
@@ -54,7 +61,14 @@ export default function Dashboard() {
 
     setSyncing(true);
     try {
-      const data = await dashboardAPI.getStats();
+      let data;
+      if (selectedSurveyId) {
+        // Load survey-specific stats
+        data = await dashboardAPI.getSurveyStats(selectedSurveyId);
+      } else {
+        // Load overall stats
+        data = await dashboardAPI.getStats();
+      }
       setStats(data);
       setLastSyncTime(new Date());
     } catch (error) {
