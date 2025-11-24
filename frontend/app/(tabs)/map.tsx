@@ -9,6 +9,7 @@ import {
   Dimensions,
   FlatList,
   Platform,
+  Modal,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -19,6 +20,8 @@ import { Respondent, LocationTracking } from '../../src/types';
 import * as Location from 'expo-location';
 import LeafletMap from '../../src/components/LeafletMap';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
