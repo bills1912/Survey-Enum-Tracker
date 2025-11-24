@@ -346,4 +346,84 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  viewToggle: {
+    padding: 8,
+  },
+  listContainer: {
+    padding: 16,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  listHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1976D2',
+    marginLeft: 12,
+  },
+  locationCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  locationInfo: {
+    flex: 1,
+  },
+  locationName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  locationStatus: {
+    fontSize: 14,
+    color: '#666',
+    textTransform: 'capitalize',
+  },
+  coordinatesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  coordinates: {
+    fontSize: 13,
+    color: '#666',
+    marginLeft: 4,
+    fontFamily: 'monospace',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 64,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    marginTop: 16,
+  },
 });
