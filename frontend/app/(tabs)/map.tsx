@@ -27,6 +27,7 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [myLocation, setMyLocation] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map'); // Leaflet map works in Expo Go!
+  const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
   const [region, setRegion] = useState({
     latitude: -6.2088,
     longitude: 106.8456,
