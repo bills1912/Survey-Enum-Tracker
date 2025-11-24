@@ -231,6 +231,21 @@ const styles = StyleSheet.create({
   },
   syncButton: {
     padding: 8,
+    backgroundColor: '#E3F2FD',
+    borderRadius: 20,
+  },
+  syncButtonActive: {
+    backgroundColor: '#BBDEFB',
+  },
+  lastSyncContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 4,
+  },
+  lastSyncText: {
+    fontSize: 11,
+    color: '#999',
   },
   offlineWarning: {
     flexDirection: 'row',
