@@ -366,13 +366,14 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Multi-Survey Context & Selection"
+    - "Survey-Filtered Dashboard Stats"
+    - "Survey-Filtered Map Respondents"
+    - "Manual Sync Buttons (All Screens)"
     - "Authentication API (login/register)"
-    - "Respondent/Survey CRUD APIs"
-    - "Location Tracking APIs"
-    - "Chat/Message APIs (AI + Supervisor)"
     - "Dashboard Stats API"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
