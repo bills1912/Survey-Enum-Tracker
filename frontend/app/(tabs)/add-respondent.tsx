@@ -15,6 +15,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
+import { useSurvey } from '../../src/contexts/SurveyContext';
 import { respondentAPI } from '../../src/services/api';
 import { storageService } from '../../src/services/storage';
 import * as Location from 'expo-location';
@@ -24,8 +25,11 @@ import MapPicker from '../../src/components/MapPicker';
 export default function AddRespondent() {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
+  const { selectedSurveyId } = useSurvey();
   const router = useRouter();
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
