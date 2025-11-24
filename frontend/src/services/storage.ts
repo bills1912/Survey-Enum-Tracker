@@ -5,9 +5,15 @@ const KEYS = {
   PENDING_LOCATIONS: 'pending_locations',
   PENDING_MESSAGES: 'pending_messages',
   PENDING_RESPONDENTS: 'pending_respondents',
+  PENDING_RESPONDENT_UPDATES: 'pending_respondent_updates',
+  CACHED_RESPONDENTS: 'cached_respondents',
+  CACHED_SURVEYS: 'cached_surveys',
+  CACHED_LOCATIONS: 'cached_locations',
   FAQS: 'cached_faqs',
   USER: 'user',
   TOKEN: 'token',
+  LAST_SYNC: 'last_sync_time',
+  SYNC_QUEUE: 'sync_queue',
 };
 
 export const storageService = {
