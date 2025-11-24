@@ -100,6 +100,8 @@ export default function AddRespondent() {
             text: 'OK',
             onPress: () => {
               setName('');
+              setPhone('');
+              setAddress('');
               setLocation(null);
               router.back();
             },
@@ -116,6 +118,8 @@ export default function AddRespondent() {
               text: 'OK',
               onPress: () => {
                 setName('');
+                setPhone('');
+                setAddress('');
                 setLocation(null);
                 router.back();
               },
@@ -125,7 +129,8 @@ export default function AddRespondent() {
       }
     } catch (error: any) {
       console.error('Error adding respondent:', error);
-      Alert.alert('Error', 'Failed to add respondent. Please try again.');
+      const errorMsg = error.response?.data?.detail || error.message || 'Failed to add respondent. Please try again.';
+      Alert.alert('Error', errorMsg);
     } finally {
       setSubmitting(false);
     }
