@@ -120,7 +120,6 @@ export default function MapScreen() {
       <MapView
         style={styles.map}
         region={region}
-        provider={PROVIDER_DEFAULT}
         showsUserLocation
         showsMyLocationButton
       >
