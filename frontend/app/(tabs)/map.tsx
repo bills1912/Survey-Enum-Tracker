@@ -228,28 +228,16 @@ export default function MapScreen() {
   };
 
   const showStatusMenu = (respondent: Respondent) => {
-    Alert.alert(
-      'Update Status',
-      `Pilih status untuk ${respondent.name}`,
-      [
-        {
-          text: '🔴 Pending',
-          onPress: () => updateRespondentStatus(respondent, 'pending'),
-        },
-        {
-          text: '🟡 In Progress',
-          onPress: () => updateRespondentStatus(respondent, 'in_progress'),
-        },
-        {
-          text: '🟢 Completed',
-          onPress: () => updateRespondentStatus(respondent, 'completed'),
-        },
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
-      ]
-    );
+    setSelectedRespondentForStatus(respondent);
+    setShowStatusModal(true);
+  };
+
+  const handleStatusSelect = async (status: 'pending' | 'in_progress' | 'completed') => {
+    if (selectedRespondentForStatus) {
+      setShowStatusModal(false);
+      await updateRespondentStatus(selectedRespondentForStatus, status);
+      setSelectedRespondentForStatus(null);
+    }
   };
 
   const renderLocationItem = ({ item }: { item: Respondent }) => (
