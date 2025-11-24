@@ -55,15 +55,7 @@ export default function SurveysListScreen() {
 
   useEffect(() => {
     loadSurveys();
-    loadSelectedSurvey();
   }, []);
-
-  const loadSelectedSurvey = async () => {
-    const saved = await AsyncStorage.getItem('selected_survey');
-    if (saved) {
-      setSelectedSurvey(saved);
-    }
-  };
 
   const loadSurveys = async () => {
     if (!isConnected) {
