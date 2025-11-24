@@ -15,6 +15,9 @@ interface LeafletMapProps {
   markers: Marker[];
   center?: { latitude: number; longitude: number };
   zoom?: number;
+  selectedMarker?: { latitude: number; longitude: number };
+  userLocation?: { latitude: number; longitude: number };
+  showRouting?: boolean;
 }
 
 export default function LeafletMap({ markers, center, zoom = 13 }: LeafletMapProps) {
