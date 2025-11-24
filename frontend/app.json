@@ -13,7 +13,9 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to track field work.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location in the background to track field work every 5 minutes.",
-        "UIBackgroundModes": ["location"]
+        "UIBackgroundModes": [
+          "location"
+        ]
       }
     },
     "android": {
@@ -56,7 +58,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#2196F3"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
