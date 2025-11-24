@@ -36,11 +36,29 @@ export default function Dashboard() {
     try {
       const data = await dashboardAPI.getStats();
       setStats(data);
+      setLastSyncTime(new Date());
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!isConnected) {
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const data = await dashboardAPI.getStats();
+      setStats(data);
+      setLastSyncTime(new Date());
+    } catch (error) {
+      console.error('Error syncing stats:', error);
+    } finally {
+      setSyncing(false);
     }
   };
 
