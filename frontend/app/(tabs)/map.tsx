@@ -25,10 +25,13 @@ const { width, height } = Dimensions.get('window');
 export default function MapScreen() {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
+  const { selectedSurveyId } = useSurvey();
   const router = useRouter();
   const [respondents, setRespondents] = useState<Respondent[]>([]);
   const [locations, setLocations] = useState<LocationTracking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [myLocation, setMyLocation] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map'); // Leaflet map works in Expo Go!
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
@@ -42,7 +45,7 @@ export default function MapScreen() {
   useEffect(() => {
     loadMapData();
     getCurrentLocation();
-  }, []);
+  }, [selectedSurveyId]);
 
   const getCurrentLocation = async () => {
     try {
