@@ -317,6 +317,10 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'monospace',
   },
+  locationButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -325,6 +329,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     gap: 8,
+  },
+  pinButton: {
+    backgroundColor: '#FF9800',
   },
   locationButtonText: {
     color: '#fff',
