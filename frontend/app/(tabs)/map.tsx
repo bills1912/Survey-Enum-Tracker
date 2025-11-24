@@ -3,13 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
+  ScrollView,
+  FlatList,
   TouchableOpacity,
   Alert,
-  Dimensions,
-  FlatList,
-  Platform,
+  ActivityIndicator,
   Modal,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
