@@ -224,22 +224,47 @@ export default function SurveysListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.title}>My Surveys</Text>
           <Text style={styles.subtitle}>
             {user?.role === 'admin' ? 'Manage all surveys' : 
              user?.role === 'supervisor' ? 'Your assigned surveys' :
              'Your survey activities'}
           </Text>
+          {lastSyncTime && (
+            <View style={styles.lastSyncContainer}>
+              <MaterialIcons name="schedule" size={12} color="#999" />
+              <Text style={styles.lastSyncText}>
+                Last sync: {lastSyncTime.toLocaleTimeString('id-ID', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </Text>
+            </View>
+          )}
         </View>
-        {(user?.role === 'admin' || user?.role === 'supervisor') && (
+        <View style={styles.headerActions}>
           <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => setShowCreateModal(true)}
+            style={styles.syncButton}
+            onPress={handleSync}
+            disabled={syncing || !isConnected}
           >
-            <MaterialIcons name="add-circle" size={32} color="#4CAF50" />
+            <MaterialIcons 
+              name="sync" 
+              size={24} 
+              color={syncing || !isConnected ? '#ccc' : '#2196F3'}
+              style={syncing ? styles.spinning : null}
+            />
           </TouchableOpacity>
-        )}
+          {(user?.role === 'admin' || user?.role === 'supervisor') && (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setShowCreateModal(true)}
+            >
+              <MaterialIcons name="add-circle" size={32} color="#4CAF50" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {!isConnected && (
