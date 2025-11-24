@@ -66,10 +66,43 @@ export default function Chat() {
           setMessages(pending.filter((m) => m.message_type === 'supervisor'));
         }
       }
+      setLastSyncTime(new Date());
     } catch (error) {
       console.error('Error loading chat data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!isConnected) {
+      Alert.alert('Offline', 'Cannot sync while offline. Please connect to the internet.');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      if (activeTab === 'ai') {
+        // Reload FAQs
+        const cachedFaqs = await faqAPI.getFAQs();
+        await storageService.cacheFAQs(cachedFaqs);
+        setFaqs(cachedFaqs);
+        
+        // Reload AI messages
+        const aiMessages = await messageAPI.getMessages('ai');
+        setMessages(aiMessages);
+      } else {
+        // Reload supervisor messages
+        const supervisorMessages = await messageAPI.getMessages('supervisor');
+        setMessages(supervisorMessages);
+      }
+      setLastSyncTime(new Date());
+      Alert.alert('Success', 'Chat data synced successfully!');
+    } catch (error) {
+      console.error('Error syncing chat data:', error);
+      Alert.alert('Error', 'Failed to sync chat data. Please try again.');
+    } finally {
+      setSyncing(false);
     }
   };
 
