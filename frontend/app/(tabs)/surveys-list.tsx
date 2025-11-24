@@ -166,7 +166,7 @@ export default function SurveysListScreen() {
   };
 
   const renderSurvey = ({ item }: { item: Survey }) => {
-    const isSelected = selectedSurvey === item.id;
+    const isSelected = selectedSurveyId === item.id;
     
     return (
       <TouchableOpacity
