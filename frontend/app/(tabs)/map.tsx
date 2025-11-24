@@ -80,6 +80,18 @@ export default function MapScreen() {
     }
   };
 
+  const loadSurveys = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/surveys`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSurveys(response.data);
+    } catch (error) {
+      console.error('Error loading surveys:', error);
+    }
+  };
+
   const loadMapData = async () => {
     if (!isConnected) {
       setLoading(false);
@@ -88,8 +100,11 @@ export default function MapScreen() {
     }
 
     try {
+      // Use map survey filter if set, otherwise use global survey context
+      const surveyFilter = mapSurveyFilter === 'all' ? undefined : mapSurveyFilter;
+      
       const [respondentsData, locationsData] = await Promise.all([
-        respondentAPI.getRespondents(selectedSurveyId || undefined),
+        respondentAPI.getRespondents(surveyFilter),
         locationAPI.getLatestLocations(),
       ]);
 
