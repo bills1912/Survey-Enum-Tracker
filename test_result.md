@@ -381,10 +381,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Multi-Survey Context & Selection"
-    - "Survey-Filtered Dashboard Stats"
-    - "Survey-Filtered Map Respondents"
-    - "Manual Sync Buttons (All Screens)"
+    - "Chat Screen (AI + Supervisor)"
+    - "Survey Detail Screen"
     - "Authentication API (login/register)"
     - "Dashboard Stats API"
   stuck_tasks: []
