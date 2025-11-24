@@ -200,6 +200,7 @@ export default function SurveysListScreen() {
 
   const renderSurvey = ({ item }: { item: Survey }) => {
     const isSelected = selectedSurveyId === item.id;
+    const stats = surveyStats[item.id];
     
     return (
       <TouchableOpacity
@@ -214,7 +215,7 @@ export default function SurveysListScreen() {
               {item.region_level.toUpperCase()} - {item.region_name}
             </Text>
             {item.description && (
-              <Text style={styles.surveyDescription}>{item.description}</Text>
+              <Text style={styles.surveyDescription} numberOfLines={2}>{item.description}</Text>
             )}
           </View>
           {isSelected && (
@@ -223,6 +224,28 @@ export default function SurveysListScreen() {
             </View>
           )}
         </View>
+
+        {/* Stats Preview */}
+        {stats && (
+          <View style={styles.statsPreview}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{stats.total_respondents}</Text>
+              <Text style={styles.statLabel}>Total</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: '#FF9800' }]}>{stats.in_progress}</Text>
+              <Text style={styles.statLabel}>Progress</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: '#4CAF50' }]}>{stats.completed}</Text>
+              <Text style={styles.statLabel}>Done</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: '#2196F3' }]}>{stats.completion_rate}%</Text>
+              <Text style={styles.statLabel}>Rate</Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.surveyFooter}>
           <View style={styles.dateInfo}>
