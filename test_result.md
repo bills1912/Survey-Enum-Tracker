@@ -256,11 +256,14 @@ frontend:
     file: "/app/frontend/app/(tabs)/chat.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented dual chat with AI assistant (FAQs + Gemini) and supervisor messaging, offline queuing"
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed keyboard covering input text issue by properly restructuring KeyboardAvoidingView. Added keyboardShouldPersistTaps='handled' to FlatList and improved keyboard behavior for both iOS and Android"
   
   - task: "Profile Screen with Location Tracking Toggle"
     implemented: true
