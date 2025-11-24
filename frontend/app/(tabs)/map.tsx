@@ -531,6 +531,55 @@ export default function MapScreen() {
           </View>
         </>
       )}
+
+      {/* Status Update Modal */}
+      <Modal
+        visible={showStatusModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowStatusModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.statusModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowStatusModal(false)}
+        >
+          <View style={styles.statusModalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.statusModalTitle}>Update Status</Text>
+            <Text style={styles.statusModalSubtitle}>
+              {selectedRespondentForStatus?.name}
+            </Text>
+            
+            <TouchableOpacity
+              style={[styles.statusOptionButton, styles.pendingButton]}
+              onPress={() => handleStatusSelect('pending')}
+            >
+              <Text style={styles.statusOptionText}>Pending</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.statusOptionButton, styles.inProgressButton]}
+              onPress={() => handleStatusSelect('in_progress')}
+            >
+              <Text style={styles.statusOptionText}>In Progress</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.statusOptionButton, styles.completedButton]}
+              onPress={() => handleStatusSelect('completed')}
+            >
+              <Text style={styles.statusOptionText}>Completed</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowStatusModal(false)}
+            >
+              <Text style={styles.cancelButtonText}>Batal</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
