@@ -72,36 +72,24 @@ export default function Profile() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     // Generate random 3-digit number
-    const randomNumber = Math.floor(100 + Math.random() * 900).toString();
-    
-    Alert.prompt(
-      'Logout Confirmation',
-      `To prevent accidental logout, please enter this number: ${randomNumber}`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async (inputValue) => {
-            if (inputValue === randomNumber) {
-              await locationTrackingService.stopTracking();
-              await logout();
-              router.replace('/(auth)/login');
-            } else {
-              Alert.alert('Error', 'Incorrect number. Logout cancelled.');
-            }
-          },
-        },
-      ],
-      'plain-text',
-      '',
-      'numeric'
-    );
+    const code = Math.floor(100 + Math.random() * 900).toString();
+    setRandomCode(code);
+    setLogoutCode('');
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    if (logoutCode === randomCode) {
+      setShowLogoutModal(false);
+      await locationTrackingService.stopTracking();
+      await logout();
+      router.replace('/(auth)/login');
+    } else {
+      Alert.alert('Error', 'Incorrect number. Please try again.');
+      setLogoutCode('');
+    }
   };
 
   const handleSync = async () => {
