@@ -19,6 +19,7 @@ import { respondentAPI } from '../../src/services/api';
 import { storageService } from '../../src/services/storage';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
+import MapPicker from '../../src/components/MapPicker';
 
 export default function AddRespondent() {
   const { user } = useAuth();
