@@ -28,6 +28,8 @@ export default function Chat() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
