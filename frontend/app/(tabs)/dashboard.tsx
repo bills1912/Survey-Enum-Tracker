@@ -18,6 +18,7 @@ import { DashboardStats } from '../../src/types';
 export default function Dashboard() {
   const { user } = useAuth();
   const { isConnected, syncNow } = useNetwork();
+  const { selectedSurvey, selectedSurveyId } = useSurvey();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -26,7 +27,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [selectedSurveyId]);
 
   const loadStats = async () => {
     if (!isConnected) {
