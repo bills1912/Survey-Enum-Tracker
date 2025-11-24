@@ -74,6 +74,12 @@ export default function TabsLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="add-respondent"
+          options={{
+            href: null, // This hides it from the tab bar
+          }}
+        />
       </Tabs>
     </>
   );
