@@ -386,6 +386,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  lastSyncContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 4,
+  },
+  lastSyncText: {
+    fontSize: 11,
+    color: '#999',
+  },
+  syncButton: {
+    padding: 8,
+    backgroundColor: '#E3F2FD',
+    borderRadius: 20,
+  },
+  spinning: {
+    transform: [{ rotate: '360deg' }],
+  },
   refreshButton: {
     padding: 8,
   },
