@@ -66,6 +66,7 @@ class FieldTrackerAPITester:
             
             return response
         except requests.exceptions.RequestException as e:
+            print(f"Request exception: {e}")
             return None
     
     def test_authentication_apis(self):
