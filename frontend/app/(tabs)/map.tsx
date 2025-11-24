@@ -177,53 +177,34 @@ export default function MapScreen() {
         />
       ) : (
         <>
-          <MapView
-            style={styles.map}
-            region={region}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {/* Respondent Markers */}
-            {respondents.map((respondent) => (
-              <Marker
-                key={respondent.id}
-                coordinate={{
-                  latitude: respondent.location.latitude,
-                  longitude: respondent.location.longitude,
-                }}
-                pinColor={getMarkerColor(respondent.status)}
-                title={respondent.name}
-                description={`Status: ${respondent.status}`}
-              >
-                <View
-                  style={[
-                    styles.customMarker,
-                    { backgroundColor: getMarkerColor(respondent.status) },
-                  ]}
-                >
-                  <MaterialIcons name="person-pin" size={32} color="#fff" />
-                </View>
-              </Marker>
-            ))}
-
-            {/* Enumerator Location Markers (for Admin/Supervisor) */}
-            {user?.role !== 'enumerator' &&
-              locations.map((loc) => (
-                <Marker
-                  key={loc.id}
-                  coordinate={{
+          <LeafletMap
+            markers={[
+              ...respondents.map((r) => ({
+                id: r.id,
+                latitude: r.location.latitude,
+                longitude: r.location.longitude,
+                title: r.name,
+                color: getMarkerColor(r.status),
+                icon: '📍',
+              })),
+              ...(user?.role !== 'enumerator'
+                ? locations.map((loc) => ({
+                    id: loc.id || '',
                     latitude: loc.latitude,
                     longitude: loc.longitude,
-                  }}
-                  title="Enumerator Location"
-                  description={`User ID: ${loc.user_id}`}
-                >
-                  <View style={[styles.customMarker, { backgroundColor: '#2196F3' }]}>
-                    <MaterialIcons name="my-location" size={24} color="#fff" />
-                  </View>
-                </Marker>
-              ))}
-          </MapView>
+                    title: 'Enumerator',
+                    color: '#2196F3',
+                    icon: '👤',
+                  }))
+                : []),
+            ]}
+            center={
+              myLocation
+                ? { latitude: myLocation.latitude, longitude: myLocation.longitude }
+                : undefined
+            }
+            zoom={13}
+          />
 
           {/* Legend */}
           <View style={styles.legend}>
