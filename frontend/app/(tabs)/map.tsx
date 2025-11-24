@@ -691,4 +691,71 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 6,
   },
+  filterContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  surveyFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  filterText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  surveyList: {
+    maxHeight: 400,
+  },
+  surveyItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  surveyItemSelected: {
+    backgroundColor: '#E8F5E9',
+  },
+  surveyItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  surveyItemTextSelected: {
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
 });
