@@ -74,7 +74,7 @@ index 0000000..bd59451
 +import requests
 +import json
 +
-+BASE_URL = "https://fieldtracker-15.preview.emergentagent.com/api"
++BASE_URL = "https://datahunter-13.preview.emergentagent.com/api"
 +
 +# Login as admin first
 +login_data = {"email": "admin@fieldtracker.com", "password": "admin123"}

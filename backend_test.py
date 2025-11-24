@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 # Configuration
-BASE_URL = "https://fieldtracker-15.preview.emergentagent.com/api"
+BASE_URL = "https://datahunter-13.preview.emergentagent.com/api"
 
 # Test credentials from seed data
 TEST_USERS = {
