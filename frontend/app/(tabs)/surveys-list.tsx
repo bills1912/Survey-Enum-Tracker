@@ -103,9 +103,11 @@ export default function SurveysListScreen() {
   };
 
   const selectSurvey = async (surveyId: string) => {
-    await AsyncStorage.setItem('selected_survey', surveyId);
-    setSelectedSurvey(surveyId);
-    Alert.alert('Success', 'Survey selected! Go to Dashboard to see survey-specific data.');
+    const survey = surveys.find(s => s.id === surveyId);
+    if (survey) {
+      await setGlobalSurvey(survey);
+      Alert.alert('Success', 'Survey selected! Go to Dashboard to see survey-specific data.');
+    }
   };
 
   const createSurvey = async () => {
