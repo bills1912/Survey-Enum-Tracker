@@ -31,7 +31,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      router.replace('/(tabs)/dashboard');
+      router.replace('/(tabs)/surveys-list');
     } catch (error: any) {
       Alert.alert('Login Failed', error.response?.data?.detail || 'Invalid credentials');
     } finally {
