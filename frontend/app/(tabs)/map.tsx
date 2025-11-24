@@ -25,6 +25,7 @@ export default function MapScreen() {
   const [locations, setLocations] = useState<LocationTracking[]>([]);
   const [loading, setLoading] = useState(true);
   const [myLocation, setMyLocation] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('list'); // Default to list for compatibility
   const [region, setRegion] = useState({
     latitude: -6.2088,
     longitude: 106.8456,
