@@ -6,7 +6,7 @@ Debug specific failing endpoints
 import requests
 import json
 
-BASE_URL = "https://datahunter-13.preview.emergentagent.com/api"
+BASE_URL = "https://datacollect-2.preview.emergentagent.com/api"
 
 # Login as admin first
 login_data = {"email": "admin@fieldtracker.com", "password": "admin123"}

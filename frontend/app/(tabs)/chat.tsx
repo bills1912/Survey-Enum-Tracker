@@ -271,17 +271,17 @@ export default function Chat() {
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
-      >
-        {loading ? (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#2196F3" />
-          </View>
-        ) : (
-          <>
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#2196F3" />
+        </View>
+      ) : (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        >
+          <View style={{ flex: 1 }}>
             {/* Messages or FAQs */}
             {activeTab === 'ai' && messages.length === 0 ? (
               <FlatList
@@ -289,6 +289,7 @@ export default function Chat() {
                 keyExtractor={(item) => item.id}
                 renderItem={renderFAQ}
                 contentContainerStyle={styles.faqList}
+                keyboardShouldPersistTaps="handled"
                 ListHeaderComponent={
                   <View style={styles.faqHeader}>
                     <MaterialIcons name="lightbulb-outline" size={32} color="#2196F3" />
@@ -307,6 +308,7 @@ export default function Chat() {
                 renderItem={renderMessage}
                 contentContainerStyle={styles.messageList}
                 inverted
+                keyboardShouldPersistTaps="handled"
                 ListEmptyComponent={
                   <View style={styles.emptyContainer}>
                     <MaterialIcons name="chat-bubble-outline" size={64} color="#ccc" />
@@ -316,32 +318,34 @@ export default function Chat() {
                 }
               />
             )}
-          </>
-        )}
+          </View>
 
-        {/* Input */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder={`Ask ${activeTab === 'ai' ? 'AI' : 'supervisor'}...`}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={500}
-          />
-          <TouchableOpacity
-            style={[styles.sendButton, (!inputText.trim() || sending) && styles.sendButtonDisabled]}
-            onPress={sendMessage}
-            disabled={!inputText.trim() || sending}
-          >
-            {sending ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <MaterialIcons name="send" size={24} color="#fff" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          {/* Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={`Ask ${activeTab === 'ai' ? 'AI' : 'supervisor'}...`}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={500}
+              onSubmitEditing={sendMessage}
+              blurOnSubmit={false}
+            />
+            <TouchableOpacity
+              style={[styles.sendButton, (!inputText.trim() || sending) && styles.sendButtonDisabled]}
+              onPress={sendMessage}
+              disabled={!inputText.trim() || sending}
+            >
+              {sending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <MaterialIcons name="send" size={24} color="#fff" />
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      )}
     </View>
   );
 }
