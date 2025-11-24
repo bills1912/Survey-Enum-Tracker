@@ -199,6 +199,60 @@ export default function Profile() {
         <Text style={styles.footerText}>Field Data Collection Tracker</Text>
         <Text style={styles.footerSubtext}>Built with Expo & FastAPI</Text>
       </View>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={showLogoutModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLogoutModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <MaterialIcons name="lock" size={48} color="#F44336" />
+              <Text style={styles.modalTitle}>Logout Confirmation</Text>
+            </View>
+
+            <Text style={styles.modalMessage}>
+              To prevent accidental logout, please enter this code:
+            </Text>
+
+            <View style={styles.codeDisplay}>
+              <Text style={styles.codeText}>{randomCode}</Text>
+            </View>
+
+            <TextInput
+              style={styles.codeInput}
+              placeholder="Enter code here"
+              value={logoutCode}
+              onChangeText={setLogoutCode}
+              keyboardType="numeric"
+              maxLength={3}
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowLogoutModal(false);
+                  setLogoutCode('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={confirmLogout}
+              >
+                <Text style={styles.confirmButtonText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
