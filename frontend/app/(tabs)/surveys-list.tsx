@@ -106,7 +106,11 @@ export default function SurveysListScreen() {
     const survey = surveys.find(s => s.id === surveyId);
     if (survey) {
       await setGlobalSurvey(survey);
-      Alert.alert('Success', 'Survey selected! Go to Dashboard to see survey-specific data.');
+      // Navigate to survey detail screen
+      router.push({
+        pathname: '/(tabs)/survey-detail',
+        params: { surveyId: surveyId }
+      });
     }
   };
 
