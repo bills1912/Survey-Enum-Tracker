@@ -27,6 +27,7 @@ export default function AddRespondent() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   const getLocation = async () => {
     setLoadingLocation(true);
