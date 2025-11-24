@@ -37,12 +37,12 @@ const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 export default function SurveysListScreen() {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
+  const { selectedSurveyId, setSelectedSurvey: setGlobalSurvey } = useSurvey();
   const router = useRouter();
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedSurvey, setSelectedSurvey] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
