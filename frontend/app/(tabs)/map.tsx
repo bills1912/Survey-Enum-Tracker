@@ -480,8 +480,8 @@ export default function MapScreen() {
             markers={[
               ...respondents.map((r) => ({
                 id: r.id,
-                latitude: r.location.latitude,
-                longitude: r.location.longitude,
+                latitude: r.location?.latitude || r.latitude,
+                longitude: r.location?.longitude || r.longitude,
                 title: r.name,
                 color: getMarkerColor(r.status),
                 icon: '📍',
