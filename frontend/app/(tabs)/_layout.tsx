@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabsLayout() {
   const { isConnected, pendingSync } = useNetwork();
+  const insets = useSafeAreaInsets();
 
   return (
     <>
@@ -26,7 +27,11 @@ export default function TabsLayout() {
         screenOptions={{
           tabBarActiveTintColor: '#2196F3',
           tabBarInactiveTintColor: '#666',
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: {
+            ...styles.tabBar,
+            paddingBottom: Math.max(insets.bottom, 8),
+            height: 60 + Math.max(insets.bottom, 0),
+          },
           headerShown: false,
         }}
       >
