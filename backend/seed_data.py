@@ -32,7 +32,7 @@ async def seed_database():
     # Admin user
     admin = {
         "username": "admin",
-        "email": "admin@fieldtracker.com",
+        "email": "admin@example.com",
         "password": pwd_context.hash("admin123"),
         "role": "admin",
         "created_at": datetime.utcnow()
@@ -43,7 +43,7 @@ async def seed_database():
     # Supervisor user
     supervisor = {
         "username": "supervisor1",
-        "email": "supervisor@fieldtracker.com",
+        "email": "supervisor@example.com",
         "password": pwd_context.hash("supervisor123"),
         "role": "supervisor",
         "created_at": datetime.utcnow()
@@ -54,7 +54,7 @@ async def seed_database():
     # Enumerator users
     enumerator1 = {
         "username": "enumerator1",
-        "email": "enum1@fieldtracker.com",
+        "email": "enum1@example.com",
         "password": pwd_context.hash("enum123"),
         "role": "enumerator",
         "supervisor_id": supervisor_id,
@@ -65,7 +65,7 @@ async def seed_database():
     
     enumerator2 = {
         "username": "enumerator2",
-        "email": "enum2@fieldtracker.com",
+        "email": "enum2@example.com",
         "password": pwd_context.hash("enum123"),
         "role": "enumerator",
         "supervisor_id": supervisor_id,
