@@ -167,28 +167,37 @@ export default function AddRespondent() {
                     Lng: {location.longitude.toFixed(6)}
                   </Text>
                 </View>
-                <TouchableOpacity onPress={getLocation} disabled={loadingLocation}>
-                  <MaterialIcons name="refresh" size={24} color="#2196F3" />
+                <TouchableOpacity onPress={() => setShowMap(true)}>
+                  <MaterialIcons name="edit-location" size={24} color="#2196F3" />
                 </TouchableOpacity>
               </View>
             ) : (
-              <TouchableOpacity
-                style={styles.locationButton}
-                onPress={getLocation}
-                disabled={loadingLocation}
-              >
-                {loadingLocation ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <>
-                    <MaterialIcons name="my-location" size={24} color="#fff" />
-                    <Text style={styles.locationButtonText}>Capture Current Location</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+              <View style={styles.locationButtons}>
+                <TouchableOpacity
+                  style={[styles.locationButton, { flex: 1 }]}
+                  onPress={getLocation}
+                  disabled={loadingLocation}
+                >
+                  {loadingLocation ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <MaterialIcons name="my-location" size={20} color="#fff" />
+                      <Text style={styles.locationButtonText}>Use GPS</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.locationButton, styles.pinButton, { flex: 1 }]}
+                  onPress={() => setShowMap(true)}
+                >
+                  <MaterialIcons name="push-pin" size={20} color="#fff" />
+                  <Text style={styles.locationButtonText}>Pin on Map</Text>
+                </TouchableOpacity>
+              </View>
             )}
             <Text style={styles.helpText}>
-              📍 Make sure you're at the respondent's location before capturing
+              📍 Use GPS for current location or pin on map to select any location
             </Text>
           </View>
 
