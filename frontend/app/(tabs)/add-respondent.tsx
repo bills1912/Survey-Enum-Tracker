@@ -74,14 +74,22 @@ export default function AddRespondent() {
       return;
     }
 
+    if (!selectedSurveyId) {
+      Alert.alert('Error', 'Please select a survey first from the Surveys screen');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const respondentData = {
         name: name.trim(),
+        phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
         location: {
           latitude: location.latitude,
           longitude: location.longitude,
         },
+        survey_id: selectedSurveyId,
         enumerator_id: user?.id,
       };
 
