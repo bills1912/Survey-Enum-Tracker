@@ -334,21 +334,13 @@ export default function SurveysListScreen() {
           </View>
         }
         ListFooterComponent={
-          !showAllSurveys && surveys.length > 2 ? (
+          surveys.length > 2 ? (
             <TouchableOpacity
               style={styles.viewAllButton}
-              onPress={() => setShowAllSurveys(true)}
+              onPress={() => router.push('/(tabs)/all-surveys')}
             >
               <Text style={styles.viewAllText}>Lihat Semua Survey</Text>
               <MaterialIcons name="arrow-forward" size={20} color="#2196F3" />
-            </TouchableOpacity>
-          ) : showAllSurveys && surveys.length > 2 ? (
-            <TouchableOpacity
-              style={styles.viewAllButton}
-              onPress={() => setShowAllSurveys(false)}
-            >
-              <Text style={styles.viewAllText}>Tampilkan Lebih Sedikit</Text>
-              <MaterialIcons name="arrow-upward" size={20} color="#2196F3" />
             </TouchableOpacity>
           ) : null
         }
