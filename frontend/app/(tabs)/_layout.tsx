@@ -51,6 +51,12 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="all-surveys"
+          options={{
+            href: null, // Hidden from tabs - navigable screen
+          }}
+        />
+        <Tabs.Screen
           name="surveys"
           options={{
             href: null, // Hidden from tabs
