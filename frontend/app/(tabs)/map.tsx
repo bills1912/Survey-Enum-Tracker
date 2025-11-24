@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  FlatList,
 } from 'react-native';
 import { MapComponent as MapView, MapMarker as Marker } from '../../src/components/MapComponent';
 import { MaterialIcons } from '@expo/vector-icons';
