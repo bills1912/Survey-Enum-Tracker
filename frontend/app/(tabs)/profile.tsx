@@ -23,6 +23,9 @@ export default function Profile() {
   const router = useRouter();
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [locationPermission, setLocationPermission] = useState<string>('unknown');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [logoutCode, setLogoutCode] = useState('');
+  const [randomCode, setRandomCode] = useState('');
 
   useEffect(() => {
     checkLocationStatus();
