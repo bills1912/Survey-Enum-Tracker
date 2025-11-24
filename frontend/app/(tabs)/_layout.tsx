@@ -39,12 +39,18 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="surveys"
+          name="surveys-list"
           options={{
             title: 'Surveys',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="assignment" size={size} color={color} />
+            tabBarIcon: ({ color, size}) => (
+              <MaterialIcons name="poll" size={size} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="surveys"
+          options={{
+            href: null, // Hidden from tabs
           }}
         />
         <Tabs.Screen
