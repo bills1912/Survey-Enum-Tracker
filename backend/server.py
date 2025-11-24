@@ -793,6 +793,16 @@ async def get_public_locations():
         logger.error(f"Error fetching public locations: {e}")
         return []
 
+@api_router.get("/public/surveys")
+async def get_public_surveys():
+    """Public endpoint for leadership dashboard - no auth required"""
+    try:
+        surveys = await db.surveys.find({}).to_list(1000)
+        return [serialize_doc(s) for s in surveys]
+    except Exception as e:
+        logger.error(f"Error fetching public surveys: {e}")
+        return []
+
 # Include router
 app.include_router(api_router)
 
