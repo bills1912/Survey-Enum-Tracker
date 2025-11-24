@@ -361,9 +361,9 @@
         // Load dashboard data
         async function loadData() {
             try {
-                // This would need authentication in production
+                // Using public endpoints (no authentication required)
                 const [stats, respondents, locations] = await Promise.all([
-                    fetch(`${API_URL}/dashboard/stats`).then(r => r.json()).catch(() => ({
+                    fetch(`${API_URL}/public/dashboard-stats`).then(r => r.json()).catch(() => ({
                         total_respondents: 0,
                         pending: 0,
                         in_progress: 0,
@@ -371,8 +371,8 @@
                         active_enumerators: 0,
                         total_enumerators: 0
                     })),
-                    fetch(`${API_URL}/respondents`).then(r => r.json()).catch(() => []),
-                    fetch(`${API_URL}/locations/latest`).then(r => r.json()).catch(() => [])
+                    fetch(`${API_URL}/public/respondents`).then(r => r.json()).catch(() => []),
+                    fetch(`${API_URL}/public/locations`).then(r => r.json()).catch(() => [])
                 ]);
                 
                 // Update stats
