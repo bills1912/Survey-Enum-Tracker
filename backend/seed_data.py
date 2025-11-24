@@ -181,10 +181,10 @@ async def seed_database():
     
     print("\\n=== Seed Data Complete ===")
     print(f"\\nTest Credentials:")
-    print(f"Admin: admin@fieldtracker.com / admin123")
-    print(f"Supervisor: supervisor@fieldtracker.com / supervisor123")
-    print(f"Enumerator 1: enum1@fieldtracker.com / enum123")
-    print(f"Enumerator 2: enum2@fieldtracker.com / enum123")
+    print(f"Admin: admin@example.com / admin123")
+    print(f"Supervisor: supervisor@example.com / supervisor123")
+    print(f"Enumerator 1: enum1@example.com / enum123")
+    print(f"Enumerator 2: enum2@example.com / enum123")
     
     client.close()
 
