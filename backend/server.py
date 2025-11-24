@@ -152,6 +152,10 @@ class RespondentUpdate(BaseModel):
     status: Optional[str] = None
     survey_data: Optional[Dict[str, Any]] = None
     enumerator_id: Optional[str] = None
+    
+    class Config:
+        # Allow any status value without strict validation
+        extra = "forbid"
 
 class LocationTracking(BaseModel):
     id: Optional[str] = None
