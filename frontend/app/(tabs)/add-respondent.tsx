@@ -172,6 +172,29 @@ export default function AddRespondent() {
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter phone number (optional)"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Enter address (optional)"
+              value={address}
+              onChangeText={setAddress}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Location *</Text>
             {location ? (
               <View style={styles.locationDisplay}>
