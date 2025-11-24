@@ -220,6 +220,22 @@ export default function AddRespondent() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Map Picker Modal */}
+      <Modal
+        visible={showMap}
+        animationType="slide"
+        onRequestClose={() => setShowMap(false)}
+      >
+        <MapPicker
+          initialLocation={location || undefined}
+          onLocationSelect={(selectedLocation) => {
+            setLocation(selectedLocation);
+            Alert.alert('Success', 'Location selected successfully!');
+          }}
+          onClose={() => setShowMap(false)}
+        />
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
