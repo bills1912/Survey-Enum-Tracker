@@ -76,17 +76,43 @@ export default function MapScreen() {
 
     try {
       const [respondentsData, locationsData] = await Promise.all([
-        respondentAPI.getRespondents(),
+        respondentAPI.getRespondents(selectedSurveyId || undefined),
         locationAPI.getLatestLocations(),
       ]);
 
       setRespondents(respondentsData);
       setLocations(locationsData);
+      setLastSyncTime(new Date());
     } catch (error) {
       console.error('Error loading map data:', error);
       Alert.alert('Error', 'Failed to load map data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!isConnected) {
+      Alert.alert('Offline', 'Cannot sync while offline. Please connect to the internet.');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const [respondentsData, locationsData] = await Promise.all([
+        respondentAPI.getRespondents(selectedSurveyId || undefined),
+        locationAPI.getLatestLocations(),
+      ]);
+
+      setRespondents(respondentsData);
+      setLocations(locationsData);
+      setLastSyncTime(new Date());
+      Alert.alert('Success', `Map data synced! Found ${respondentsData.length} respondents.`);
+    } catch (error) {
+      console.error('Error syncing map data:', error);
+      Alert.alert('Error', 'Failed to sync map data. Please try again.');
+    } finally {
+      setSyncing(false);
     }
   };
 
