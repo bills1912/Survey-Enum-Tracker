@@ -271,72 +271,78 @@ export default function Chat() {
         </TouchableOpacity>
       </View>
 
-      {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#2196F3" />
-        </View>
-      ) : (
-        <>
-          {/* Messages or FAQs */}
-          {activeTab === 'ai' && messages.length === 0 ? (
-            <FlatList
-              data={faqs}
-              keyExtractor={(item) => item.id}
-              renderItem={renderFAQ}
-              contentContainerStyle={styles.faqList}
-              ListHeaderComponent={
-                <View style={styles.faqHeader}>
-                  <MaterialIcons name="lightbulb-outline" size={32} color="#2196F3" />
-                  <Text style={styles.faqHeaderTitle}>Frequently Asked Questions</Text>
-                  <Text style={styles.faqHeaderSubtitle}>
-                    Tap a question to get an instant answer, or ask your own below
-                  </Text>
-                </View>
-              }
-            />
-          ) : (
-            <FlatList
-              ref={flatListRef}
-              data={messages}
-              keyExtractor={(item, index) => item.id || `msg-${index}`}
-              renderItem={renderMessage}
-              contentContainerStyle={styles.messageList}
-              inverted
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <MaterialIcons name="chat-bubble-outline" size={64} color="#ccc" />
-                  <Text style={styles.emptyText}>No messages yet</Text>
-                  <Text style={styles.emptySubtext}>Start a conversation below</Text>
-                </View>
-              }
-            />
-          )}
-        </>
-      )}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+      >
+        {loading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#2196F3" />
+          </View>
+        ) : (
+          <>
+            {/* Messages or FAQs */}
+            {activeTab === 'ai' && messages.length === 0 ? (
+              <FlatList
+                data={faqs}
+                keyExtractor={(item) => item.id}
+                renderItem={renderFAQ}
+                contentContainerStyle={styles.faqList}
+                ListHeaderComponent={
+                  <View style={styles.faqHeader}>
+                    <MaterialIcons name="lightbulb-outline" size={32} color="#2196F3" />
+                    <Text style={styles.faqHeaderTitle}>Frequently Asked Questions</Text>
+                    <Text style={styles.faqHeaderSubtitle}>
+                      Tap a question to get an instant answer, or ask your own below
+                    </Text>
+                  </View>
+                }
+              />
+            ) : (
+              <FlatList
+                ref={flatListRef}
+                data={messages}
+                keyExtractor={(item, index) => item.id || `msg-${index}`}
+                renderItem={renderMessage}
+                contentContainerStyle={styles.messageList}
+                inverted
+                ListEmptyComponent={
+                  <View style={styles.emptyContainer}>
+                    <MaterialIcons name="chat-bubble-outline" size={64} color="#ccc" />
+                    <Text style={styles.emptyText}>No messages yet</Text>
+                    <Text style={styles.emptySubtext}>Start a conversation below</Text>
+                  </View>
+                }
+              />
+            )}
+          </>
+        )}
 
-      {/* Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder={`Ask ${activeTab === 'ai' ? 'AI' : 'supervisor'}...`}
-          value={inputText}
-          onChangeText={setInputText}
-          multiline
-          maxLength={500}
-        />
-        <TouchableOpacity
-          style={[styles.sendButton, (!inputText.trim() || sending) && styles.sendButtonDisabled]}
-          onPress={sendMessage}
-          disabled={!inputText.trim() || sending}
-        >
-          {sending ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <MaterialIcons name="send" size={24} color="#fff" />
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        {/* Input */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder={`Ask ${activeTab === 'ai' ? 'AI' : 'supervisor'}...`}
+            value={inputText}
+            onChangeText={setInputText}
+            multiline
+            maxLength={500}
+          />
+          <TouchableOpacity
+            style={[styles.sendButton, (!inputText.trim() || sending) && styles.sendButtonDisabled]}
+            onPress={sendMessage}
+            disabled={!inputText.trim() || sending}
+          >
+            {sending ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <MaterialIcons name="send" size={24} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
