@@ -519,6 +519,108 @@
             loadData();
         }
         
+        // Bulk Upload Modal Functions
+        function showBulkUploadModal() {
+            document.getElementById('bulkUploadModal').style.display = 'flex';
+            loadSurveysForUpload();
+        }
+
+        function closeBulkUploadModal() {
+            document.getElementById('bulkUploadModal').style.display = 'none';
+            document.getElementById('uploadForm').reset();
+            document.getElementById('uploadResult').innerHTML = '';
+        }
+
+        async function loadSurveysForUpload() {
+            try {
+                const surveys = await fetch(`${API_URL}/public/surveys`).then(r => r.json());
+                const select = document.getElementById('surveySelect');
+                select.innerHTML = '<option value="">Select a survey...</option>';
+                surveys.forEach(survey => {
+                    const option = document.createElement('option');
+                    option.value = survey.id;
+                    option.textContent = survey.title;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading surveys:', error);
+            }
+        }
+
+        function downloadTemplate() {
+            const wb = XLSX.utils.book_new();
+            const ws_data = [
+                ['Location', 'Supervisor Email', 'Enumerator Email'],
+                ['Jakarta Pusat', 'supervisor1@example.com', 'enumerator1@example.com'],
+                ['Jakarta Selatan', 'supervisor2@example.com', 'enumerator2@example.com'],
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Template");
+            XLSX.writeFile(wb, "bulk_upload_template.xlsx");
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const surveyId = document.getElementById('surveySelect').value;
+            if (!surveyId) {
+                alert('Please select a survey first');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    // Transform data to API format
+                    const users = jsonData.map(row => ({
+                        location: row['Location'] || row['location'],
+                        supervisor_email: row['Supervisor Email'] || row['supervisor_email'],
+                        enumerator_email: row['Enumerator Email'] || row['enumerator_email']
+                    }));
+
+                    // Upload to API
+                    document.getElementById('uploadResult').innerHTML = '<p style="color: #2196F3;">Uploading...</p>';
+                    
+                    const response = await fetch(`${API_URL}/surveys/${surveyId}/bulk-upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            survey_id: surveyId,
+                            users: users
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        document.getElementById('uploadResult').innerHTML = `
+                            <p style="color: #4CAF50;">✓ ${result.message}</p>
+                            <p>Created ${result.created_users.length} users</p>
+                            ${result.errors.length > 0 ? `<p style="color: #FF9800;">Errors: ${result.errors.length}</p>` : ''}
+                        `;
+                        setTimeout(() => {
+                            closeBulkUploadModal();
+                            loadData();
+                        }, 3000);
+                    } else {
+                        document.getElementById('uploadResult').innerHTML = `<p style="color: #F44336;">❌ Upload failed</p>`;
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    document.getElementById('uploadResult').innerHTML = `<p style="color: #F44336;">❌ Error: ${error.message}</p>`;
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
         // Initialize on load
         window.onload = () => {
             initMap();
@@ -528,5 +630,40 @@
             setInterval(loadData, 30000);
         };
     </script>
+
+    <!-- Bulk Upload Modal -->
+    <div id="bulkUploadModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 32px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 style="margin: 0; color: #333;">Bulk Upload Users</h2>
+                <button onclick="closeBulkUploadModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+            </div>
+
+            <form id="uploadForm">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Select Survey</label>
+                    <select id="surveySelect" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                        <option value="">Loading surveys...</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Upload Excel File</label>
+                    <p style="font-size: 12px; color: #999; margin-bottom: 8px;">Format: Location | Supervisor Email | Enumerator Email</p>
+                    <input type="file" accept=".xlsx,.xls" onchange="handleFileUpload(event)" style="width: 100%; padding: 12px; border: 2px dashed #ddd; border-radius: 8px; cursor: pointer;"/>
+                </div>
+
+                <button type="button" onclick="downloadTemplate()" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px;">
+                    📥 Download Template
+                </button>
+
+                <div id="uploadResult" style="margin-top: 16px; padding: 12px; border-radius: 8px; background: #f5f5f5;"></div>
+            </form>
+
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+                <p style="font-size: 12px; color: #999; margin: 0;">Default password for all created users: <strong>password123</strong></p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
