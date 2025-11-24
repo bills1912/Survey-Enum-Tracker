@@ -204,6 +204,52 @@ export default function MapScreen() {
   };
 
   // Render location list item
+  const updateRespondentStatus = async (respondent: Respondent, newStatus: 'pending' | 'in_progress' | 'completed') => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/respondents/${respondent.id}`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Update local state
+      setRespondents(prev => 
+        prev.map(r => r.id === respondent.id ? { ...r, status: newStatus } : r)
+      );
+      
+      Alert.alert('Berhasil', `Status diubah menjadi ${newStatus.replace('_', ' ')}`);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      Alert.alert('Error', 'Gagal mengupdate status');
+    }
+  };
+
+  const showStatusMenu = (respondent: Respondent) => {
+    Alert.alert(
+      'Update Status',
+      `Pilih status untuk ${respondent.name}`,
+      [
+        {
+          text: '🔴 Pending',
+          onPress: () => updateRespondentStatus(respondent, 'pending'),
+        },
+        {
+          text: '🟡 In Progress',
+          onPress: () => updateRespondentStatus(respondent, 'in_progress'),
+        },
+        {
+          text: '🟢 Completed',
+          onPress: () => updateRespondentStatus(respondent, 'completed'),
+        },
+        {
+          text: 'Batal',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
   const renderLocationItem = ({ item }: { item: Respondent }) => (
     <TouchableOpacity
       style={styles.locationCard}
@@ -216,7 +262,7 @@ export default function MapScreen() {
         />
         <View style={styles.locationInfo}>
           <Text style={styles.locationName}>{item.name}</Text>
-          <Text style={styles.locationStatus}>{item.status.replace('_', ' ')}</Text>
+          <Text style={styles.locationStatus}>{item.status.replace('_', ' ').toUpperCase()}</Text>
         </View>
         <MaterialIcons name="chevron-right" size={24} color="#ccc" />
       </View>
@@ -226,18 +272,35 @@ export default function MapScreen() {
           {item.location.latitude.toFixed(6)}, {item.location.longitude.toFixed(6)}
         </Text>
       </View>
-      {user?.role === 'enumerator' && (
-        <TouchableOpacity
-          style={styles.navigateButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            openGoogleMaps(item);
-          }}
-        >
-          <MaterialIcons name="directions" size={20} color="#fff" />
-          <Text style={styles.navigateButtonText}>Navigate</Text>
-        </TouchableOpacity>
-      )}
+      
+      {/* Action Buttons */}
+      <View style={styles.actionButtonsRow}>
+        {user?.role === 'enumerator' && (
+          <>
+            <TouchableOpacity
+              style={styles.statusButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                showStatusMenu(item);
+              }}
+            >
+              <MaterialIcons name="edit" size={18} color="#2196F3" />
+              <Text style={styles.statusButtonText}>Update Status</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.navigateButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                openGoogleMaps(item);
+              }}
+            >
+              <MaterialIcons name="directions" size={18} color="#fff" />
+              <Text style={styles.navigateButtonText}>Navigate</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
     </TouchableOpacity>
   );
 
