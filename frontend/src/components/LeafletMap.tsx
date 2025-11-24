@@ -42,7 +42,9 @@ export default function LeafletMap({
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   <style>
     body, html {
       margin: 0;
@@ -65,6 +67,9 @@ export default function LeafletMap({
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       font-size: 24px;
     }
+    .leaflet-routing-container {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -74,7 +79,7 @@ export default function LeafletMap({
     var map = L.map('map', {
       zoomControl: true,
       attributionControl: true
-    }).setView([${defaultCenter.latitude}, ${defaultCenter.longitude}], ${zoom});
+    }).setView([${defaultCenter.latitude}, ${defaultCenter.longitude}], ${zoomLevel});
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -93,9 +98,18 @@ export default function LeafletMap({
       });
     }
 
+    // Add user location if provided
+    ${userLocation ? `
+    var userIcon = createCustomIcon('#2196F3', '📱');
+    var userMarker = L.marker([${userLocation.latitude}, ${userLocation.longitude}], { icon: userIcon })
+      .addTo(map)
+      .bindPopup('<b>Your Location</b><br/>Lat: ${userLocation.latitude.toFixed(6)}<br/>Lng: ${userLocation.longitude.toFixed(6)}');
+    ` : ''}
+
     // Add markers
     var markers = ${JSON.stringify(markers)};
     var bounds = [];
+    ${userLocation ? `bounds.push([${userLocation.latitude}, ${userLocation.longitude}]);` : ''}
 
     markers.forEach(function(marker) {
       var icon = createCustomIcon(marker.color, marker.icon || '📍');
@@ -106,23 +120,28 @@ export default function LeafletMap({
       bounds.push([marker.latitude, marker.longitude]);
     });
 
+    // Add routing if requested
+    ${showRouting && userLocation && selectedMarker ? `
+    L.Routing.control({
+      waypoints: [
+        L.latLng(${userLocation.latitude}, ${userLocation.longitude}),
+        L.latLng(${selectedMarker.latitude}, ${selectedMarker.longitude})
+      ],
+      routeWhileDragging: false,
+      show: false,
+      addWaypoints: false,
+      lineOptions: {
+        styles: [{color: '#2196F3', opacity: 0.8, weight: 5}]
+      }
+    }).addTo(map);
+    ` : ''}
+
     // Fit map to show all markers
     if (bounds.length > 0) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-    }
-
-    // Handle location button (optional)
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var userIcon = L.divIcon({
-          html: '<div class="custom-marker" style="background-color: #2196F3;">📱</div>',
-          className: '',
-          iconSize: [40, 40]
-        });
-        L.marker([position.coords.latitude, position.coords.longitude], { icon: userIcon })
-          .addTo(map)
-          .bindPopup('Your Location');
-      });
+      ${selectedMarker ? 
+        `map.setView([${selectedMarker.latitude}, ${selectedMarker.longitude}], ${zoomLevel});` :
+        `map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });`
+      }
     }
   </script>
 </body>
