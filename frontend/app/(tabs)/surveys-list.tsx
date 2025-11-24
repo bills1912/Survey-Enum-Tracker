@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  title: {
+  greeting: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
@@ -457,6 +457,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
   headerActions: {
     flexDirection: 'row',
