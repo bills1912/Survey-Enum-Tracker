@@ -267,7 +267,7 @@ export default function MapScreen() {
       <View style={styles.coordinatesRow}>
         <MaterialIcons name="location-on" size={16} color="#666" />
         <Text style={styles.coordinates}>
-          {item.location.latitude.toFixed(6)}, {item.location.longitude.toFixed(6)}
+          {(item.location?.latitude || item.latitude)?.toFixed(6)}, {(item.location?.longitude || item.longitude)?.toFixed(6)}
         </Text>
       </View>
       
