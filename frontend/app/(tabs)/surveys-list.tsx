@@ -420,8 +420,31 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  syncButton: {
+    padding: 8,
+    backgroundColor: '#E3F2FD',
+    borderRadius: 20,
+  },
+  spinning: {
+    transform: [{ rotate: '360deg' }],
+  },
   addButton: {
     padding: 4,
+  },
+  lastSyncContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 4,
+  },
+  lastSyncText: {
+    fontSize: 11,
+    color: '#999',
   },
   offlineWarning: {
     flexDirection: 'row',
