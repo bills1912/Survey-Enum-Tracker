@@ -483,4 +483,23 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 16,
   },
+  addButton: {
+    padding: 8,
+  },
+  navigateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  navigateButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
 });
