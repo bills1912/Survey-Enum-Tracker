@@ -209,29 +209,50 @@ export default function Profile() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            {/* Close Button */}
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => {
+                setShowLogoutModal(false);
+                setLogoutCode('');
+              }}
+            >
+              <MaterialIcons name="close" size={28} color="#666" />
+            </TouchableOpacity>
+
+            {/* Header */}
             <View style={styles.modalHeader}>
-              <MaterialIcons name="lock" size={48} color="#F44336" />
-              <Text style={styles.modalTitle}>Logout Confirmation</Text>
+              <View style={styles.iconContainer}>
+                <MaterialIcons name="logout" size={40} color="#2196F3" />
+              </View>
+              <Text style={styles.modalTitle}>Logout</Text>
+              <Text style={styles.modalSubtitle}>Apakah yakin logout ?</Text>
             </View>
 
-            <Text style={styles.modalMessage}>
-              To prevent accidental logout, please enter this code:
-            </Text>
-
-            <View style={styles.codeDisplay}>
-              <Text style={styles.codeText}>{randomCode}</Text>
+            {/* Code Display */}
+            <View style={styles.codeSection}>
+              <View style={styles.codeDisplay}>
+                <Text style={styles.codeText}>{randomCode}</Text>
+              </View>
+              <Text style={styles.codeInstruction}>
+                Untuk melakukan aksi berikut, tolong ketik kode verifikasi dengan benar
+              </Text>
             </View>
 
-            <TextInput
-              style={styles.codeInput}
-              placeholder="Enter code here"
-              value={logoutCode}
-              onChangeText={setLogoutCode}
-              keyboardType="numeric"
-              maxLength={3}
-              autoFocus
-            />
+            {/* Input Field */}
+            <View style={styles.inputSection}>
+              <TextInput
+                style={styles.codeInput}
+                placeholder=""
+                value={logoutCode}
+                onChangeText={setLogoutCode}
+                keyboardType="numeric"
+                maxLength={3}
+                autoFocus
+              />
+            </View>
 
+            {/* Buttons */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
@@ -240,14 +261,14 @@ export default function Profile() {
                   setLogoutCode('');
                 }}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>BATAL</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={confirmLogout}
               >
-                <Text style={styles.confirmButtonText}>Logout</Text>
+                <Text style={styles.confirmButtonText}>LOGOUT</Text>
               </TouchableOpacity>
             </View>
           </View>
