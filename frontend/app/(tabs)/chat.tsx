@@ -218,13 +218,40 @@ export default function Chat() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Chat</Text>
-        {!isConnected && (
-          <View style={styles.offlineBadge}>
-            <MaterialIcons name="cloud-off" size={16} color="#FF9800" />
-            <Text style={styles.offlineBadgeText}>Offline</Text>
-          </View>
-        )}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Chat</Text>
+          {lastSyncTime && (
+            <View style={styles.lastSyncContainer}>
+              <MaterialIcons name="schedule" size={12} color="#999" />
+              <Text style={styles.lastSyncText}>
+                Last sync: {lastSyncTime.toLocaleTimeString('id-ID', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.syncButton}
+            onPress={handleSync}
+            disabled={syncing || !isConnected}
+          >
+            <MaterialIcons 
+              name="sync" 
+              size={24} 
+              color={syncing || !isConnected ? '#ccc' : '#2196F3'}
+              style={syncing ? styles.spinning : null}
+            />
+          </TouchableOpacity>
+          {!isConnected && (
+            <View style={styles.offlineBadge}>
+              <MaterialIcons name="cloud-off" size={16} color="#FF9800" />
+              <Text style={styles.offlineBadgeText}>Offline</Text>
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Tabs */}
