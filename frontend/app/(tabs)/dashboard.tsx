@@ -11,6 +11,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
+import { useSurvey } from '../../src/contexts/SurveyContext';
 import { dashboardAPI } from '../../src/services/api';
 import { DashboardStats } from '../../src/types';
 
