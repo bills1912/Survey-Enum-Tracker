@@ -113,7 +113,7 @@ export default function Surveys() {
           <Text style={styles.respondentName}>{item.name}</Text>
           <Text style={styles.location}>
             <MaterialIcons name="location-on" size={14} color="#666" />
-            {' '}{item.location.latitude.toFixed(4)}, {item.location.longitude.toFixed(4)}
+            {' '}{(item.location?.latitude || item.latitude)?.toFixed(4)}, {(item.location?.longitude || item.longitude)?.toFixed(4)}
           </Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
