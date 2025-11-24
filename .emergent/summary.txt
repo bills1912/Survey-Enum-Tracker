@@ -1,94 +1,91 @@
 <analysis>
-The user wants to build a comprehensive device tracking application for field data collection. The project began with a request for a Flutter/Firebase stack, which was negotiated to the supported Expo (React Native), FastAPI, and MongoDB stack. The core requirements include real-time location tracking of field enumerators, a map-based visualization of survey respondents with color-coded statuses (pending, in-progress, completed), role-based access control (Admin, Supervisor, Enumerator, Leader), and an AI chat assistant (Gemini).
+The user wants to build a comprehensive field data collection and device tracking application. The project uses an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
 
-The development trajectory shows an iterative process. The backend was established first, with a RESTful API using FastAPI and a MongoDB database, including user authentication (JWT), and endpoints for managing users, respondents, surveys, and chat. A seed script was created for initial data population.
+The trajectory shows a highly iterative development process driven by user feedback. Initial work focused on setting up the core architecture: a secure API with JWT authentication, basic data models, and a mobile app with tab-based navigation. A key early challenge was map rendering, which was solved by embedding Leaflet.js in a .
 
-The frontend, built with Expo (React Native), has a tab-based navigation structure. Key features implemented include:
-- A login screen and authentication flow using React Context.
-- Offline-first capabilities, queuing location data and survey submissions for later synchronization.
-- A map view that, after several iterations to solve device/Expo Go compatibility issues, now uses Leaflet.js within a  for robust performance. This map supports zooming to locations, displaying routes, and showing the user's current position.
-- A feature for enumerators to add new respondents, including capturing location via GPS or by pinning a location on a map.
-- A custom, professional-looking logout confirmation modal.
-- The initial framework for multi-survey support, including a new screen to list and select surveys.
-- Manual data synchronization buttons on the Dashboard and Survey List screens.
+Recent development has been rapid, addressing a series of feature requests and bug fixes. Major features implemented include:
+1.  **Multi-Survey Integration:** A  was created to manage a globally selected survey, and screens like the Dashboard and Map were updated to filter data accordingly.
+2.  **Web Dashboard:** A static web dashboard was created and served via the FastAPI backend. It initially failed due to authentication issues, which were resolved by creating dedicated public, read-only API endpoints. A bulk user upload/assignment feature was then added.
+3.  **Mobile UI/UX Overhaul:** The mobile app's home screen was completely redesigned. The main Dashboard tab was removed, and the Surveys list became the new home screen. This screen was enhanced with a user greeting, survey-specific statistics, and a pinned/active view with a button to navigate to a separate All Surveys search screen. A professional splash screen animation was also added.
+4.  **Bug Fixes:** Numerous bugs were addressed, including data persistence for respondent status updates, a 500 error in the chat API due to serialization issues, and several Expo Go connection problems.
 
-The user's primary language is English. The next agent must respond in English.
+The user's language has shifted to Indonesian. The next agent must respond in **Bahasa Indonesia**.
 </analysis>
 
 <product_requirements>
-The goal is to create a multi-user, real-time device tracking application for monitoring field data collection activities.
+The goal is to build a multi-user, real-time device tracking application for monitoring field data collection activities.
 
 **Core Functionality:**
--   **Mobile App (Android/iOS via Expo):** An application for field officers (Enumerators) and their Supervisors.
--   **Web Dashboard:** A monitoring dashboard for Admins and high-level Leaders.
--   **Role-Based Access:**
-    -   **Enumerator:** Views own progress, conducts surveys, uses chat, adds new respondents, and sees their own location track.
-    -   **Supervisor:** Monitors their assigned team of enumerators.
-    -   **Admin:** Full access to monitor all users and data.
-    -   **Leader:** A web-based view to monitor overall progress and locations.
+*   **Mobile App (Expo/React Native):** For Enumerators and Supervisors to conduct surveys, track progress, and communicate.
+*   **Web Dashboard:** For Admins and Leaders to monitor overall progress, user locations, and manage survey assignments.
+*   **Role-Based Access:** Differentiated features for Admin, Supervisor, and Enumerator roles.
 
 **Key Features Implemented:**
--   **Real-Time Location Tracking:** Tracks enumerator locations every 5 minutes.
--   **Map Visualization:** Uses OpenStreetMap (via Leaflet.js) to display color-coded respondent markers (Red: Pending, Yellow: In-progress, Green: Completed). Users can click a respondent to zoom in or view a route.
--   **Offline First:** The app functions without a network signal. Location data and survey results are stored locally and synced automatically when connectivity is restored.
--   **Multi-Survey Support:** The backend supports multiple surveys, and a survey selection screen has been added for all users.
--   **Manual Sync:** Users can manually trigger data synchronization from the Dashboard and Survey List.
--   **Secure Logout:** A confirmation modal requiring a random code input prevents accidental logouts.
--   **Add Respondent:** Enumerators can add new respondents on the fly, capturing their location via GPS or by pinning it on the map.
+*   **Real-time Tracking:** Enumerator locations are tracked and displayed on a Leaflet.js map.
+*   **Map Visualization:** Color-coded markers represent respondent status (Pending, In-progress, Completed).
+*   **Multi-Survey Support:** The app now filters data on the map and dashboard based on a globally selected survey.
+*   **Redesigned Home Screen:** The app opens to a survey list showing pinned active surveys, with a button to view all surveys on a separate searchable screen. Cards now show preview stats.
+*   **Web Dashboard:** A functional dashboard provides real-time statistics and a map view. It includes a feature for admins to bulk upload and assign enumerators/supervisors to surveys via an XLSX file.
+*   **In-App Status Updates:** Enumerators can update a respondent's status directly from the map's list view via an aesthetic, custom modal.
+*   **Introductory Animation:** A professional splash screen animation appears before the login screen.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-Stack Architecture:** Expo (React Native) frontend, FastAPI (Python) backend, MongoDB database.
--   **Authentication:** JWT-based token authentication.
--   **Mapping:**  embedding Leaflet.js with OpenStreetMap tiles for map display, markers, and routing ().
--   **Location Services:**  for foreground and background GPS tracking.
--   **Offline Storage:**  for caching data like user sessions, survey data, and queued location updates.
--   **State Management:** React Context API for managing authentication () and survey data ().
--   **API Communication:**  for making HTTP requests to the FastAPI backend.
+- **Full-Stack Architecture:** Expo (React Native), FastAPI (Python), MongoDB.
+- **Authentication:** JWT (JSON Web Tokens).
+- **Mapping:**  embedding Leaflet.js with OpenStreetMap.
+- **State Management:** React Context API (, ).
+- **API Communication:**  client for RESTful API calls.
+- **UI & Animation:**  for the splash screen.
+- **Keyboard Handling:**  for chat input.
 </key_technical_concepts>
 
 <code_architecture>
 The project is a monorepo with , , and  directories.
 
-**Directory Structure:**
 
 
 -   ****
-    -   **Importance:** The core of the backend. It defines all API endpoints, data models (Pydantic), and business logic for user management, authentication, and data handling for surveys, respondents, and locations.
-    -   **Changes:** Initially a simple server, it was significantly expanded to include JWT security, CRUD operations for multiple surveys, respondents, and users, and role-based data access.
+    -   **Importance:** The core API. Defines all endpoints, data models, and business logic.
+    -   **Changes:** Heavily modified to add public, read-only endpoints for the web dashboard (e.g., ), new endpoints for bulk user assignment (), and bug fixes for data persistence and ObjectId serialization in the chat API.
+
 -   ****
-    -   **Importance:** The central screen for visualizing field activity. It displays respondents on a map or in a list, allows interaction (zooming, routing), and provides access to add new respondents.
-    -   **Changes:** This file has undergone the most changes. It evolved from using the problematic  to a -based Leaflet map. It now includes a list/map view toggle, click-to-zoom, routing functionality, and a header button for adding respondents.
+    -   **Importance:** The application's entry point.
+    -   **Changes:** Refactored to manage the initial view. It now displays a splash screen animation for 3.5 seconds and then navigates the user either to the login screen or directly to the main app layout (), correctly bypassing the now-defunct dashboard.
+
 -   ****
-    -   **Importance:** A crucial component created to solve map rendering issues in Expo Go. It encapsulates a  that renders a self-contained HTML page with Leaflet.js, receiving location data via props and communicating events back to the React Native app.
-    -   **Changes:** Created to replace . It was later enhanced to support props for showing the user's current location, zooming to a specific coordinate, and drawing a route between two points.
+    -   **Importance:** Defines the main tab navigation structure.
+    -   **Changes:** Modified to completely remove the  tab, making  the default home screen. It also hides the  and  screens from the tab bar, making them accessible only through navigation actions.
+
 -   ****
-    -   **Importance:** Defines the main tab navigation for the mobile app, including which screens are visible in the tab bar and their icons.
-    -   **Changes:** It was modified to add the  screen and to hide the  screen from the tab bar (), making it a navigable screen but not a main tab.
+    -   **Importance:** The new Home screen for authenticated users.
+    -   **Changes:** Completely redesigned to display a personalized greeting, a list of active or pinned surveys with progress statistics on each card, and a Lihat Semua Survey button that navigates to the  screen.
+
 -   ****
-    -   **Importance:** Contains user profile information and the logout functionality.
-    -   **Changes:** The logout feature was extensively reworked from a simple  (which failed on Android) to a custom, professionally styled modal that requires a random code for confirmation, improving both functionality and UX.
--   ** & **
-    -   **Importance:** These are key data display screens.  shows available surveys, and  shows summary statistics.
-    -   **Changes:** Both were recently updated to include a manual synchronization button in the header, along with a Last synced timestamp, to give users control over data freshness.
+    -   **Importance:** A new screen created to display a comprehensive, searchable list of all surveys a user is assigned to.
+    -   **Changes:** Created from scratch with a search bar and a  to render all surveys fetched from the API.
+
+-   ****
+    -   **Importance:** Visualizes respondent and enumerator locations.
+    -   **Changes:** Enhanced with a feature for users to update a respondent's status (, , ) via a custom, aesthetic modal. A bug was fixed to ensure status changes are persisted to the database and the local state is updated correctly upon success.
+
+-   ****
+    -   **Importance:** The in-app messaging feature.
+    -   **Changes:** A backend bug causing a 500 error on message send was fixed. The file is currently being modified to resolve a UI bug where the keyboard covers the text input field when a user is typing.
 </code_architecture>
 
 <pending_tasks>
--   **Build Web Leadership Dashboard:** The  is a placeholder. It needs to be developed into a functional React application that consumes the backend API to display real-time progress and location data for leaders.
--   **Integrate Multi-Survey Selection:** The  screen allows users to see surveys, but the selected survey needs to be stored in a global state (e.g., ) and used to filter data across the entire app (Dashboard stats, Map respondents, etc.).
--   **Implement Sync Button Globally:** The sync button has been added to the Dashboard and Survey List. It should be added to other relevant screens like the Map and Chat to ensure a consistent data refresh experience.
+- **Finalize Chat Keyboard Fix:** The current work on the  screen to prevent the keyboard from obscuring the text input needs to be completed and verified.
+- **Implement Survey Detail Screen:** The  file exists but is a placeholder. It needs to be implemented to show detailed statistics and progress for a single selected survey, fulfilling the original intent of replacing the old Dashboard screen.
+- **Test Bulk Upload End-to-End:** The web dashboard's bulk user upload feature has been built but requires thorough end-to-end testing.
 </pending_tasks>
 
 <current_work>
-The most recent task was implementing a manual synchronization feature. This was in direct response to the user's request for a button for real-time synchronization to the database.
+The AI engineer was in the middle of fixing a critical UI bug in the chat screen (). The user reported and provided a screenshot showing that when they tried to type a message, the on-screen keyboard would cover the text input field, making it impossible to see what they were typing.
 
-The AI engineer successfully implemented this feature on two key screens:
-1.  **:** Added a sync icon button to the header. When pressed, it re-fetches the list of surveys. A Last synced timestamp is displayed to give the user feedback.
-2.  **:** A similar sync button and Last synced timestamp were added to the dashboard header to allow users to refresh the survey statistics.
-
-This involved modifying the state management (), adding  functions to re-trigger data loading functions (, ), and updating the  in  to include the new header components. The styles for these new header elements were also added. The final action taken was to restart the Expo server to apply these frontend changes. No summary of this work has been presented to the user yet.
+The previous fix attempt involving minor adjustments to  was insufficient. The current, in-progress approach involves a more significant refactoring of the  component's JSX structure. The goal is to properly isolate the message list and the input bar, wrapping them in a  with the correct  and  props to ensure the input bar reliably moves up and stays visible above the keyboard on both iOS and Android devices. The last actions taken were editing the  file to restructure the layout.
 </current_work>
 
 <optional_next_step>
-Restart the frontend to apply the changes and then create a summary document explaining the new real-time synchronization feature that has been added to the Dashboard and Surveys List screens.
+Continue fixing the keyboard issue in  by correctly structuring the  to wrap the message list and input bar, ensuring the input stays visible when the keyboard is active.
 </optional_next_step>
