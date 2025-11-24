@@ -46,6 +46,7 @@ export default function SurveysListScreen() {
   const [syncing, setSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [surveyStats, setSurveyStats] = useState<{[key: string]: any}>({});
+  const [showAllSurveys, setShowAllSurveys] = useState(false);
 
   // Form state for creating survey
   const [title, setTitle] = useState('');
