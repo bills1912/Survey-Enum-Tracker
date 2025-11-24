@@ -9,13 +9,13 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import { MapComponent as MapView, MapMarker as Marker } from '../../src/components/MapComponent';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
 import { respondentAPI, locationAPI } from '../../src/services/api';
 import { Respondent, LocationTracking } from '../../src/types';
 import * as Location from 'expo-location';
+import LeafletMap from '../../src/components/LeafletMap';
 
 const { width, height } = Dimensions.get('window');
 
