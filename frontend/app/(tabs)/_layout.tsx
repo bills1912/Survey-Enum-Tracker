@@ -30,12 +30,6 @@ export default function TabsLayout() {
         }}
       >
         <Tabs.Screen
-          name="dashboard"
-          options={{
-            href: null, // Hidden - stats moved to survey details
-          }}
-        />
-        <Tabs.Screen
           name="surveys-list"
           options={{
             title: 'Surveys',
