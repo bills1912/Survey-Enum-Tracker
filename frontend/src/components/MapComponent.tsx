@@ -1,15 +1,23 @@
 import { Platform } from 'react-native';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
 
 // Conditionally import MapView only for native platforms
-let MapView: any;
-let Marker: any;
+let MapView: any = null;
+let Marker: any = null;
+let PROVIDER_DEFAULT: any = null;
 
+// Try to load react-native-maps
 if (Platform.OS !== 'web') {
-  const maps = require('react-native-maps');
-  MapView = maps.default;
-  Marker = maps.Marker;
+  try {
+    const maps = require('react-native-maps');
+    MapView = maps.default;
+    Marker = maps.Marker;
+    PROVIDER_DEFAULT = maps.PROVIDER_DEFAULT;
+  } catch (e) {
+    console.log('react-native-maps not available:', e);
+  }
 }
 
 interface MapComponentProps {
@@ -22,6 +30,8 @@ interface MapComponentProps {
 }
 
 export function MapComponent(props: MapComponentProps) {
+  const [error, setError] = useState<string | null>(null);
+
   if (Platform.OS === 'web') {
     return (
       <View style={[styles.webContainer, props.style]}>
@@ -33,16 +43,57 @@ export function MapComponent(props: MapComponentProps) {
     );
   }
 
-  return <MapView {...props} />;
+  // Check if MapView is available
+  if (!MapView) {
+    return (
+      <View style={[styles.webContainer, props.style]}>
+        <MaterialIcons name="error-outline" size={64} color="#FF9800" />
+        <Text style={styles.webText}>Map Unavailable</Text>
+        <Text style={styles.webSubtext}>
+          Maps require native build or development build
+        </Text>
+        <Text style={styles.webInfo}>
+          Using Expo Go: Maps may not work. Build a development build to enable maps.
+        </Text>
+      </View>
+    );
+  }
+
+  try {
+    return (
+      <MapView 
+        {...props}
+        onError={(e: any) => {
+          console.error('Map error:', e);
+          setError(e?.message || 'Map loading error');
+        }}
+      />
+    );
+  } catch (e: any) {
+    return (
+      <View style={[styles.webContainer, props.style]}>
+        <MaterialIcons name="error-outline" size={64} color="#F44336" />
+        <Text style={styles.webText}>Map Error</Text>
+        <Text style={styles.webSubtext}>{e?.message || 'Failed to load map'}</Text>
+      </View>
+    );
+  }
 }
 
 export function MapMarker(props: any) {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || !Marker) {
     return null;
   }
 
-  return <Marker {...props} />;
+  try {
+    return <Marker {...props} />;
+  } catch (e) {
+    console.error('Marker error:', e);
+    return null;
+  }
 }
+
+export { PROVIDER_DEFAULT };
 
 const styles = StyleSheet.create({
   webContainer: {
