@@ -209,21 +209,29 @@ export default function MapScreen() {
   const updateRespondentStatus = async (respondent: Respondent, newStatus: 'pending' | 'in_progress' | 'completed') => {
     try {
       const token = await AsyncStorage.getItem('token');
-      await axios.put(
+      const response = await axios.put(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/respondents/${respondent.id}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Update local state
-      setRespondents(prev => 
-        prev.map(r => r.id === respondent.id ? { ...r, status: newStatus } : r)
-      );
+      console.log('Update response:', response.data);
       
-      Alert.alert('Berhasil', `Status diubah menjadi ${newStatus.replace('_', ' ')}`);
-    } catch (error) {
+      // Update local state immediately with response from server
+      if (response.data) {
+        setRespondents(prev => 
+          prev.map(r => r.id === respondent.id ? response.data : r)
+        );
+      }
+      
+      // Reload map data to ensure consistency
+      await loadMapData();
+      
+      Alert.alert('Berhasil', `Status ${respondent.name} diubah menjadi ${newStatus.replace('_', ' ')}`);
+    } catch (error: any) {
       console.error('Error updating status:', error);
-      Alert.alert('Error', 'Gagal mengupdate status');
+      console.error('Error response:', error.response?.data);
+      Alert.alert('Error', `Gagal mengupdate status: ${error.response?.data?.detail || error.message}`);
     }
   };
 
