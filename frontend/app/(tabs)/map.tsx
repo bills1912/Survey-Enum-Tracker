@@ -570,9 +570,9 @@ export default function MapScreen() {
               </View>
             )}
           </View>
-          {/* My Location Button */}
+          {/* My Location Button - Kiri Bawah */}
           <TouchableOpacity
-            style={[styles.myLocationButton, { bottom: insets.bottom + 140 }]}
+            style={[styles.myLocationButton, { left: 16, bottom: insets.bottom + 8 }]}
             onPress={centerToMyLocation}
             disabled={centeringLocation}
           >
@@ -581,6 +581,14 @@ export default function MapScreen() {
             ) : (
               <MaterialIcons name="my-location" size={24} color="#fff" />
             )}
+          </TouchableOpacity>
+
+          {/* Basemap Selector Button - Kiri Bawah */}
+          <TouchableOpacity
+            style={[styles.basemapButton, { left: 16, bottom: insets.bottom + 68 }]}
+            onPress={() => setShowBasemapPicker(true)}
+          >
+            <MaterialIcons name="layers" size={24} color="#fff" />
           </TouchableOpacity>
         </>
       )}
