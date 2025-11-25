@@ -19,6 +19,7 @@ interface LeafletMapProps {
   selectedMarker?: { latitude: number; longitude: number };
   userLocation?: { latitude: number; longitude: number };
   showRouting?: boolean;
+  basemap?: 'osm' | 'satellite' | 'hybrid';
 }
 
 export default function LeafletMap({ 
@@ -27,7 +28,8 @@ export default function LeafletMap({
   zoom = 13, 
   selectedMarker,
   userLocation,
-  showRouting = false 
+  showRouting = false,
+  basemap = 'osm'
 }: LeafletMapProps) {
   const webViewRef = useRef<WebView>(null);
 
@@ -36,6 +38,35 @@ export default function LeafletMap({
     : { latitude: -6.2088, longitude: 106.8456 });
   
   const zoomLevel = selectedMarker ? 16 : zoom;
+
+  // Basemap tile layer configuration
+  const getBasemapLayer = () => {
+    switch (basemap) {
+      case 'satellite':
+        return `
+          L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '© Google Maps'
+          }).addTo(map);
+        `;
+      case 'hybrid':
+        return `
+          L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '© Google Maps'
+          }).addTo(map);
+        `;
+      default: // 'osm'
+        return `
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+          }).addTo(map);
+        `;
+    }
+  };
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -82,12 +113,8 @@ export default function LeafletMap({
       attributionControl: true
     }).setView([${defaultCenter.latitude}, ${defaultCenter.longitude}], ${zoomLevel});
 
-    // Add Google Hybrid tiles (Satellite + Labels)
-    L.tileLayer('http://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-      maxZoom: 20,
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      attribution: '© Google Maps'
-    }).addTo(map);
+    // Add basemap tiles
+    ${getBasemapLayer()}
 
     // Custom icon function
     function createCustomIcon(color, icon) {
@@ -100,51 +127,36 @@ export default function LeafletMap({
       });
     }
 
-    // Add user location if provided
-    ${userLocation ? `
-    var userIcon = createCustomIcon('#2196F3', '📱');
-    var userMarker = L.marker([${userLocation.latitude}, ${userLocation.longitude}], { icon: userIcon })
-      .addTo(map)
-      .bindPopup('<b>Your Location</b><br/>Lat: ${userLocation.latitude.toFixed(6)}<br/>Lng: ${userLocation.longitude.toFixed(6)}');
-    ` : ''}
-
     // Add markers
-    var markers = ${JSON.stringify(markers)};
-    var bounds = [];
-    ${userLocation ? `bounds.push([${userLocation.latitude}, ${userLocation.longitude}]);` : ''}
+    ${markers.map(marker => `
+      L.marker([${marker.latitude}, ${marker.longitude}], {
+        icon: createCustomIcon('${marker.color}', '${marker.icon || '📍'}')
+      }).addTo(map)
+        .bindPopup('<b>${marker.title}</b>');
+    `).join('')}
 
-    markers.forEach(function(marker) {
-      var icon = createCustomIcon(marker.color, marker.icon || '📍');
-      var m = L.marker([marker.latitude, marker.longitude], { icon: icon })
-        .addTo(map)
-        .bindPopup('<b>' + marker.title + '</b><br/>Lat: ' + marker.latitude.toFixed(6) + '<br/>Lng: ' + marker.longitude.toFixed(6));
-      
-      bounds.push([marker.latitude, marker.longitude]);
-    });
-
-    // Add routing if requested
-    ${showRouting && userLocation && selectedMarker ? `
-    L.Routing.control({
-      waypoints: [
-        L.latLng(${userLocation.latitude}, ${userLocation.longitude}),
-        L.latLng(${selectedMarker.latitude}, ${selectedMarker.longitude})
-      ],
-      routeWhileDragging: false,
-      show: false,
-      addWaypoints: false,
-      lineOptions: {
-        styles: [{color: '#2196F3', opacity: 0.8, weight: 5}]
-      }
-    }).addTo(map);
+    // Add user location marker if available
+    ${userLocation ? `
+      L.marker([${userLocation.latitude}, ${userLocation.longitude}], {
+        icon: createCustomIcon('#2196F3', '👤')
+      }).addTo(map)
+        .bindPopup('<b>Your Location</b>');
     ` : ''}
 
-    // Fit map to show all markers
-    if (bounds.length > 0) {
-      ${selectedMarker ? 
-        `map.setView([${selectedMarker.latitude}, ${selectedMarker.longitude}], ${zoomLevel});` :
-        `map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });`
-      }
-    }
+    // Add routing if enabled
+    ${showRouting && userLocation && selectedMarker ? `
+      L.Routing.control({
+        waypoints: [
+          L.latLng(${userLocation.latitude}, ${userLocation.longitude}),
+          L.latLng(${selectedMarker.latitude}, ${selectedMarker.longitude})
+        ],
+        routeWhileDragging: false,
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: true,
+        showAlternatives: false
+      }).addTo(map);
+    ` : ''}
   </script>
 </body>
 </html>
@@ -158,11 +170,6 @@ export default function LeafletMap({
         style={styles.webview}
         javaScriptEnabled={true}
         domStorageEnabled={true}
-        geolocationEnabled={true}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-        }}
       />
     </View>
   );
