@@ -567,6 +567,18 @@ export default function MapScreen() {
               </View>
             )}
           </View>
+          {/* My Location Button */}
+          <TouchableOpacity
+            style={[styles.myLocationButton, { bottom: insets.bottom + 140 }]}
+            onPress={centerToMyLocation}
+            disabled={centeringLocation}
+          >
+            {centeringLocation ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <MaterialIcons name="my-location" size={24} color="#fff" />
+            )}
+          </TouchableOpacity>
         </>
       )}
 
