@@ -460,7 +460,7 @@ export default function MapScreen() {
           data={respondents}
           keyExtractor={(item) => item.id}
           renderItem={renderLocationItem}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + 16 }]}
           ListHeaderComponent={
             <View style={styles.listHeader}>
               <MaterialIcons name="info-outline" size={24} color="#2196F3" />
