@@ -202,83 +202,85 @@ export default function Profile() {
         <Text style={styles.footerSubtext}>Built with Expo & FastAPI</Text>
       </View>
 
-      {/* Logout Confirmation Modal */}
+      {/* Logout Confirmation Bottom Sheet */}
       <Modal
         visible={showLogoutModal}
         transparent
-        animationType="fade"
-        onRequestClose={() => setShowLogoutModal(false)}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowLogoutModal(false);
+          setLogoutCode('');
+        }}
       >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              {/* Close Button */}
-              <TouchableOpacity 
-                style={styles.closeButton}
-                onPress={() => {
-                  setShowLogoutModal(false);
-                  setLogoutCode('');
-                }}
-              >
-                <MaterialIcons name="close" size={28} color="#666" />
-              </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.bottomSheetOverlay}
+            activeOpacity={1}
+            onPress={() => {
+              setShowLogoutModal(false);
+              setLogoutCode('');
+            }}
+          >
+            <TouchableOpacity 
+              style={styles.bottomSheetContent}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              {/* Handle Bar */}
+              <View style={styles.handleBar} />
 
               {/* Header */}
-              <View style={styles.modalHeader}>
-                <View style={styles.iconContainer}>
-                  <MaterialIcons name="logout" size={40} color="#2196F3" />
-                </View>
-                <Text style={styles.modalTitle}>Logout</Text>
-                <Text style={styles.modalSubtitle}>Apakah yakin logout ?</Text>
+              <View style={styles.sheetHeader}>
+                <Text style={styles.sheetTitle}>Logout</Text>
+                <Text style={styles.sheetSubtitle}>Apakah yakin logout ?</Text>
               </View>
 
               {/* Code Display */}
-              <View style={styles.codeSection}>
-                <View style={styles.codeDisplay}>
-                  <Text style={styles.codeText}>{randomCode}</Text>
-                </View>
-                <Text style={styles.codeInstruction}>
-                  Untuk melakukan aksi berikut, tolong ketik kode verifikasi dengan benar
-                </Text>
+              <View style={styles.codeDisplayBox}>
+                <Text style={styles.codeNumber}>{randomCode}</Text>
               </View>
+
+              {/* Instruction */}
+              <Text style={styles.instruction}>
+                Untuk melakukan aksi berikut, tolong ketik kode{'\n'}verifikasi dengan benar
+              </Text>
 
               {/* Input Field */}
-              <View style={styles.inputSection}>
-                <TextInput
-                  style={styles.codeInput}
-                  placeholder=""
-                  value={logoutCode}
-                  onChangeText={setLogoutCode}
-                  keyboardType="numeric"
-                  maxLength={3}
-                  autoFocus
-                />
-              </View>
+              <TextInput
+                style={styles.verificationInput}
+                value={logoutCode}
+                onChangeText={setLogoutCode}
+                keyboardType="number-pad"
+                maxLength={3}
+                autoFocus
+                placeholder=""
+                textAlign="center"
+              />
 
               {/* Buttons */}
-              <View style={styles.modalButtons}>
+              <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
+                  style={[styles.actionButton, styles.cancelBtn]}
                   onPress={() => {
                     setShowLogoutModal(false);
                     setLogoutCode('');
                   }}
                 >
-                  <Text style={styles.cancelButtonText}>BATAL</Text>
+                  <Text style={styles.cancelBtnText}>BATAL</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.confirmButton]}
+                  style={[styles.actionButton, styles.logoutBtn]}
                   onPress={confirmLogout}
                 >
-                  <Text style={styles.confirmButtonText}>LOGOUT</Text>
+                  <Text style={styles.logoutBtnText}>LOGOUT</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
