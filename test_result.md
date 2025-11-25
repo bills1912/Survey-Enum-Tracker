@@ -288,6 +288,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Fixed keyboard covering input text issue by properly restructuring KeyboardAvoidingView. Added keyboardShouldPersistTaps='handled' to FlatList and improved keyboard behavior for both iOS and Android"
+      - working: "NA"
+        agent: "main"
+        comment: "MAJOR FIX: Completely restructured KeyboardAvoidingView to wrap the entire content area (messages list + input). Changed to use 'height' behavior for Android and 'padding' for iOS. Input container now properly slides up above keyboard like modern chat apps (WhatsApp, Gemini). Set keyboardVerticalOffset to 90 for iOS and 0 for Android."
   
   - task: "Profile Screen with Location Tracking Toggle"
     implemented: true
