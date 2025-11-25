@@ -502,6 +502,24 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  updateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2196F3',
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 10,
+  },
+  updateButtonDisabled: {
+    opacity: 0.5,
+  },
+  updateButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
