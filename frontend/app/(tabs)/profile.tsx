@@ -502,8 +502,8 @@ const styles = StyleSheet.create({
   codeDisplay: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    marginBottom: 16,
+    paddingVertical: 8,
+    marginBottom: 12,
   },
   codeNumber: {
     fontSize: 40,
