@@ -386,14 +386,14 @@ export default function MapScreen() {
           activeOpacity={1}
           onPress={() => setShowSurveyPicker(false)}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: insets.bottom + 16 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Survey</Text>
               <TouchableOpacity onPress={() => setShowSurveyPicker(false)}>
                 <MaterialIcons name="close" size={24} color="#333" />
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.surveyList}>
+            <ScrollView style={styles.surveyList} contentContainerStyle={{ paddingBottom: 16 }}>
               <TouchableOpacity
                 style={[
                   styles.surveyItem,
