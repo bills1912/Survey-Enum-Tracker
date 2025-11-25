@@ -49,6 +49,8 @@ export default function MapScreen() {
   const [myLocation, setMyLocation] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map'); // Leaflet map works in Expo Go!
   const [centeringLocation, setCenteringLocation] = useState(false);
+  const [basemap, setBasemap] = useState<'osm' | 'satellite' | 'hybrid'>('osm');
+  const [showBasemapPicker, setShowBasemapPicker] = useState(false);
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedRespondentForStatus, setSelectedRespondentForStatus] = useState<Respondent | null>(null);
@@ -543,6 +545,7 @@ export default function MapScreen() {
             }
             userLocation={myLocation}
             showRouting={!!selectedRespondent && user?.role === 'enumerator'}
+            basemap={basemap}
           />
 
           {/* Legend */}
@@ -567,9 +570,9 @@ export default function MapScreen() {
               </View>
             )}
           </View>
-          {/* My Location Button */}
+          {/* My Location Button - Kiri Bawah */}
           <TouchableOpacity
-            style={[styles.myLocationButton, { bottom: insets.bottom + 140 }]}
+            style={[styles.myLocationButton, { left: 16, bottom: insets.bottom + 8 }]}
             onPress={centerToMyLocation}
             disabled={centeringLocation}
           >
@@ -578,6 +581,14 @@ export default function MapScreen() {
             ) : (
               <MaterialIcons name="my-location" size={24} color="#fff" />
             )}
+          </TouchableOpacity>
+
+          {/* Basemap Selector Button - Kiri Bawah */}
+          <TouchableOpacity
+            style={[styles.basemapButton, { left: 16, bottom: insets.bottom + 68 }]}
+            onPress={() => setShowBasemapPicker(true)}
+          >
+            <MaterialIcons name="layers" size={24} color="#fff" />
           </TouchableOpacity>
         </>
       )}
@@ -624,6 +635,94 @@ export default function MapScreen() {
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowStatusModal(false)}
+            >
+              <Text style={styles.cancelButtonText}>Batal</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Basemap Picker Modal */}
+      <Modal
+        visible={showBasemapPicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowBasemapPicker(false)}
+      >
+        <TouchableOpacity
+          style={styles.statusModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowBasemapPicker(false)}
+        >
+          <View style={styles.statusModalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.statusModalTitle}>Select Basemap</Text>
+            <Text style={styles.statusModalSubtitle}>
+              Choose your preferred map style
+            </Text>
+            
+            <TouchableOpacity
+              style={[
+                styles.basemapOptionButton,
+                basemap === 'osm' && styles.basemapOptionSelected
+              ]}
+              onPress={() => {
+                setBasemap('osm');
+                setShowBasemapPicker(false);
+              }}
+            >
+              <MaterialIcons name="map" size={24} color={basemap === 'osm' ? '#4CAF50' : '#666'} />
+              <View style={styles.basemapTextContainer}>
+                <Text style={[styles.basemapOptionText, basemap === 'osm' && styles.basemapOptionTextSelected]}>
+                  OpenStreetMap
+                </Text>
+                <Text style={styles.basemapOptionSubtext}>Standard street map</Text>
+              </View>
+              {basemap === 'osm' && <MaterialIcons name="check-circle" size={24} color="#4CAF50" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[
+                styles.basemapOptionButton,
+                basemap === 'satellite' && styles.basemapOptionSelected
+              ]}
+              onPress={() => {
+                setBasemap('satellite');
+                setShowBasemapPicker(false);
+              }}
+            >
+              <MaterialIcons name="satellite" size={24} color={basemap === 'satellite' ? '#4CAF50' : '#666'} />
+              <View style={styles.basemapTextContainer}>
+                <Text style={[styles.basemapOptionText, basemap === 'satellite' && styles.basemapOptionTextSelected]}>
+                  Google Satellite
+                </Text>
+                <Text style={styles.basemapOptionSubtext}>Satellite imagery only</Text>
+              </View>
+              {basemap === 'satellite' && <MaterialIcons name="check-circle" size={24} color="#4CAF50" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[
+                styles.basemapOptionButton,
+                basemap === 'hybrid' && styles.basemapOptionSelected
+              ]}
+              onPress={() => {
+                setBasemap('hybrid');
+                setShowBasemapPicker(false);
+              }}
+            >
+              <MaterialIcons name="layers" size={24} color={basemap === 'hybrid' ? '#4CAF50' : '#666'} />
+              <View style={styles.basemapTextContainer}>
+                <Text style={[styles.basemapOptionText, basemap === 'hybrid' && styles.basemapOptionTextSelected]}>
+                  Google Hybrid
+                </Text>
+                <Text style={styles.basemapOptionSubtext}>Satellite with labels</Text>
+              </View>
+              {basemap === 'hybrid' && <MaterialIcons name="check-circle" size={24} color="#4CAF50" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowBasemapPicker(false)}
             >
               <Text style={styles.cancelButtonText}>Batal</Text>
             </TouchableOpacity>
@@ -1002,7 +1101,6 @@ const styles = StyleSheet.create({
   },
   myLocationButton: {
     position: 'absolute',
-    right: 16,
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -1014,5 +1112,50 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
+  },
+  basemapButton: {
+    position: 'absolute',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  basemapOptionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  basemapOptionSelected: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#4CAF50',
+  },
+  basemapTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  basemapOptionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  basemapOptionTextSelected: {
+    color: '#4CAF50',
+  },
+  basemapOptionSubtext: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
 });

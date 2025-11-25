@@ -13,6 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
 import { useSurvey } from '../../src/contexts/SurveyContext';
@@ -27,6 +28,7 @@ export default function AddRespondent() {
   const { isConnected } = useNetwork();
   const { selectedSurveyId } = useSurvey();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -274,6 +276,7 @@ export default function AddRespondent() {
             Alert.alert('Success', 'Location selected successfully!');
           }}
           onClose={() => setShowMap(false)}
+          bottomInset={insets.bottom}
         />
       </Modal>
     </KeyboardAvoidingView>
