@@ -49,6 +49,8 @@ export default function MapScreen() {
   const [myLocation, setMyLocation] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map'); // Leaflet map works in Expo Go!
   const [centeringLocation, setCenteringLocation] = useState(false);
+  const [basemap, setBasemap] = useState<'osm' | 'satellite' | 'hybrid'>('osm');
+  const [showBasemapPicker, setShowBasemapPicker] = useState(false);
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedRespondentForStatus, setSelectedRespondentForStatus] = useState<Respondent | null>(null);
