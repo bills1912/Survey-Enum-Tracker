@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration
-BASE_URL = "https://datacollect-2.preview.emergentagent.com/api"
+BASE_URL = "https://fieldtrack-15.preview.emergentagent.com/api"
 
 # Test credentials from seed data (as specified in review request)
 TEST_USERS = {

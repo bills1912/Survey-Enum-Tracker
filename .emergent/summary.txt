@@ -1,91 +1,91 @@
 <analysis>
-The user wants to build a comprehensive field data collection and device tracking application. The project uses an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
+The trajectory details an intensive development and debugging cycle for a field data collection application. The initial phase focused on core features, but the work quickly shifted to resolving a series of critical issues reported by the user.
 
-The trajectory shows a highly iterative development process driven by user feedback. Initial work focused on setting up the core architecture: a secure API with JWT authentication, basic data models, and a mobile app with tab-based navigation. A key early challenge was map rendering, which was solved by embedding Leaflet.js in a .
+A major data loss incident occurred when a seeding script () wiped the database. This was resolved by creating and running a  script that salvaged existing survey data and reconstructed related user and respondent information.
 
-Recent development has been rapid, addressing a series of feature requests and bug fixes. Major features implemented include:
-1.  **Multi-Survey Integration:** A  was created to manage a globally selected survey, and screens like the Dashboard and Map were updated to filter data accordingly.
-2.  **Web Dashboard:** A static web dashboard was created and served via the FastAPI backend. It initially failed due to authentication issues, which were resolved by creating dedicated public, read-only API endpoints. A bulk user upload/assignment feature was then added.
-3.  **Mobile UI/UX Overhaul:** The mobile app's home screen was completely redesigned. The main Dashboard tab was removed, and the Surveys list became the new home screen. This screen was enhanced with a user greeting, survey-specific statistics, and a pinned/active view with a button to navigate to a separate All Surveys search screen. A professional splash screen animation was also added.
-4.  **Bug Fixes:** Numerous bugs were addressed, including data persistence for respondent status updates, a 500 error in the chat API due to serialization issues, and several Expo Go connection problems.
+The most persistent challenge has been the user's inability to connect to the application via Expo Go. This was traced to the cloud Kubernetes environment, where the embedded ngrok tunnel in Expo's CI mode fails to correctly generate or expose the  URL. Despite numerous attempts to fix environment variables, restart services, and clear caches, the issue remained. This led to a strategic pivot: guiding the user to build a standalone APK using Expo Application Services (EAS), which involved creating , installing , and providing detailed build instructions.
 
-The user's language has shifted to Indonesian. The next agent must respond in **Bahasa Indonesia**.
+Alongside this, several UI/UX bugs and feature requests were addressed:
+1.  Fixing a login redirect to a non-existent dashboard.
+2.  Patching crashes on the Map and List views due to data structure inconsistencies after the data restore.
+3.  Adjusting the bottom tab bar to accommodate system navigation buttons.
+4.  Implementing a sophisticated offline synchronization mechanism for location tracking.
+5.  Completely redesigning the logout confirmation from a standard modal to a compact, aesthetic bottom sheet as requested by the user.
+
+The user's language is **Bahasa Indonesia**. The next agent must respond in **Bahasa Indonesia**.
 </analysis>
 
 <product_requirements>
-The goal is to build a multi-user, real-time device tracking application for monitoring field data collection activities.
+The goal is to build a multi-user, real-time device tracking application for monitoring field data collection activities, with a strong emphasis on offline capabilities.
 
-**Core Functionality:**
-*   **Mobile App (Expo/React Native):** For Enumerators and Supervisors to conduct surveys, track progress, and communicate.
-*   **Web Dashboard:** For Admins and Leaders to monitor overall progress, user locations, and manage survey assignments.
-*   **Role-Based Access:** Differentiated features for Admin, Supervisor, and Enumerator roles.
+**Core Components:**
+*   **Mobile App (React Native/Expo):** For Enumerators and Supervisors to conduct surveys, track their location, update respondent status, and communicate via chat. The app must function reliably in areas with poor or no internet connectivity.
+*   **Backend (FastAPI/MongoDB):** To manage users, surveys, respondents, and real-time location data.
+*   **Web Dashboard:** For administrative overview and user management.
 
-**Key Features Implemented:**
-*   **Real-time Tracking:** Enumerator locations are tracked and displayed on a Leaflet.js map.
-*   **Map Visualization:** Color-coded markers represent respondent status (Pending, In-progress, Completed).
-*   **Multi-Survey Support:** The app now filters data on the map and dashboard based on a globally selected survey.
-*   **Redesigned Home Screen:** The app opens to a survey list showing pinned active surveys, with a button to view all surveys on a separate searchable screen. Cards now show preview stats.
-*   **Web Dashboard:** A functional dashboard provides real-time statistics and a map view. It includes a feature for admins to bulk upload and assign enumerators/supervisors to surveys via an XLSX file.
-*   **In-App Status Updates:** Enumerators can update a respondent's status directly from the map's list view via an aesthetic, custom modal.
-*   **Introductory Animation:** A professional splash screen animation appears before the login screen.
+**Key Features & Recent Implementations:**
+*   **Real-time & Offline Tracking:** Location data is tracked and visualized on a map. A new offline synchronization system has been implemented to queue location updates and other data, syncing automatically when connectivity is restored.
+*   **UI/UX Enhancements:**
+    *   The app icon was updated.
+    *   The logout confirmation was redesigned from a central modal to a compact, non-intrusive bottom sheet with a numeric-only keyboard, as per user's visual reference.
+*   **Bug Fixes:** Resolved data loss, fixed crashes on map/list views post-data-restore, and corrected login redirection.
+*   **Build Process:** Shifted from relying on Expo Go (due to persistent environment issues) to building a standalone production APK via EAS Build.
 </product_requirements>
 
 <key_technical_concepts>
-- **Full-Stack Architecture:** Expo (React Native), FastAPI (Python), MongoDB.
+- **Full-Stack:** Expo (React Native), FastAPI (Python), MongoDB.
 - **Authentication:** JWT (JSON Web Tokens).
-- **Mapping:**  embedding Leaflet.js with OpenStreetMap.
-- **State Management:** React Context API (, ).
-- **API Communication:**  client for RESTful API calls.
-- **UI & Animation:**  for the splash screen.
-- **Keyboard Handling:**  for chat input.
+- **Build/Deployment:** Expo Application Services (EAS) for building standalone APKs.
+- **Offline Synchronization:** Using  to queue data (locations, etc.) and a custom  with retry logic to send data to the backend when online.
+- **Keyboard Handling:**  to prevent keyboard from obscuring input fields, a recurring focus for UI refinement.
+- **UI Components:** Use of custom Modals and the implementation of a Bottom Sheet for improved UX.
 </key_technical_concepts>
 
 <code_architecture>
-The project is a monorepo with , , and  directories.
+The project is a monorepo with  and  directories.
 
 
 
 -   ****
-    -   **Importance:** The core API. Defines all endpoints, data models, and business logic.
-    -   **Changes:** Heavily modified to add public, read-only endpoints for the web dashboard (e.g., ), new endpoints for bulk user assignment (), and bug fixes for data persistence and ObjectId serialization in the chat API.
+    -   **Importance:** A critical one-off script created to fix a major data loss incident.
+    -   **Summary of changes:** Created from scratch to read existing surveys, recreate users (admin, supervisors, enumerators) with new s, and then repopulate respondents and locations, associating them with the newly created user IDs. This saved the project's historical data.
 
 -   ****
-    -   **Importance:** The application's entry point.
-    -   **Changes:** Refactored to manage the initial view. It now displays a splash screen animation for 3.5 seconds and then navigates the user either to the login screen or directly to the main app layout (), correctly bypassing the now-defunct dashboard.
+    -   **Importance:** Core configuration file for the Expo app.
+    -   **Summary of changes:** Heavily modified to fix multiple issues.
+        1.  The  and  paths were updated to use a new icon derived from the splash screen image.
+        2.  Added  configuration (, , ) to enable EAS Updates (OTA).
+        3.  Added iOS-specific configurations (, permission strings) to prepare for an iOS build.
 
 -   ****
-    -   **Importance:** Defines the main tab navigation structure.
-    -   **Changes:** Modified to completely remove the  tab, making  the default home screen. It also hides the  and  screens from the tab bar, making them accessible only through navigation actions.
+    -   **Importance:** Defines build profiles for Expo Application Services (EAS).
+    -   **Summary of changes:** Created from scratch to facilitate building a standalone APK, bypassing the problematic Expo Go environment. It contains , , and  profiles, with the latter configured for a fully standalone app ().
 
 -   ****
-    -   **Importance:** The new Home screen for authenticated users.
-    -   **Changes:** Completely redesigned to display a personalized greeting, a list of active or pinned surveys with progress statistics on each card, and a Lihat Semua Survey button that navigates to the  screen.
+    -   **Importance:** Contains user profile information and the logout functionality.
+    -   **Summary of changes:** The logout confirmation was completely refactored. The original  was replaced with a custom bottom sheet implementation that is minimal, appears from the bottom, and uses a  to ensure the numeric input for the logout code is always visible above the keyboard, matching the user's provided screenshots.
 
 -   ****
-    -   **Importance:** A new screen created to display a comprehensive, searchable list of all surveys a user is assigned to.
-    -   **Changes:** Created from scratch with a search bar and a  to render all surveys fetched from the API.
+    -   **Importance:** The form for adding new survey respondents.
+    -   **Summary of changes:** The  function was fixed to send the correct data structure to the backend. It now includes the required , formats  as an object, and includes new optional fields (, ) in the payload. The UI was also updated to include input fields for phone and address.
 
 -   ****
-    -   **Importance:** Visualizes respondent and enumerator locations.
-    -   **Changes:** Enhanced with a feature for users to update a respondent's status (, , ) via a custom, aesthetic modal. A bug was fixed to ensure status changes are persisted to the database and the local state is updated correctly upon success.
-
--   ****
-    -   **Importance:** The in-app messaging feature.
-    -   **Changes:** A backend bug causing a 500 error on message send was fixed. The file is currently being modified to resolve a UI bug where the keyboard covers the text input field when a user is typing.
+    -   **Importance:** The in-app messaging screen.
+    -   **Summary of changes:** This file is the subject of the current work. The user reported that the keyboard covers the text input. An initial fix was attempted, but the user requested a more polished behavior similar to modern chat apps. The last action was refactoring the JSX to wrap the entire screen content in a  with a more robust structure.
 </code_architecture>
 
 <pending_tasks>
-- **Finalize Chat Keyboard Fix:** The current work on the  screen to prevent the keyboard from obscuring the text input needs to be completed and verified.
-- **Implement Survey Detail Screen:** The  file exists but is a placeholder. It needs to be implemented to show detailed statistics and progress for a single selected survey, fulfilling the original intent of replacing the old Dashboard screen.
-- **Test Bulk Upload End-to-End:** The web dashboard's bulk user upload feature has been built but requires thorough end-to-end testing.
+- **Finalize Chat Keyboard Fix:** Complete the refactor of  by adding the necessary styles to ensure the input field slides up smoothly above the keyboard.
+- **Implement Survey Detail Screen:** The  screen is still a placeholder and needs to be fully implemented.
+- **End-to-End Testing:** The offline synchronization feature needs to be thoroughly tested by the user in a real-world scenario (by building the APK). The bulk user upload feature also needs testing.
 </pending_tasks>
 
 <current_work>
-The AI engineer was in the middle of fixing a critical UI bug in the chat screen (). The user reported and provided a screenshot showing that when they tried to type a message, the on-screen keyboard would cover the text input field, making it impossible to see what they were typing.
+The AI engineer was actively fixing a UI/UX bug on the chat screen (). The user reported that the keyboard obscures the text input field, making it impossible to see what is being typed. The user explicitly requested a behavior similar to modern chat applications like Gemini or OpenAI, where the input field smoothly slides up and remains visible above the keyboard.
 
-The previous fix attempt involving minor adjustments to  was insufficient. The current, in-progress approach involves a more significant refactoring of the  component's JSX structure. The goal is to properly isolate the message list and the input bar, wrapping them in a  with the correct  and  props to ensure the input bar reliably moves up and stays visible above the keyboard on both iOS and Android devices. The last actions taken were editing the  file to restructure the layout.
+The previous engineer identified that the existing  implementation was suboptimal. A significant refactoring of the component's structure was started. The last action taken was editing  to wrap the entire screen—the message list () and the input bar ()—within a single, top-level . This sets up the correct structure, but the styling adjustments to make it work have not yet been applied. The next step is to add the necessary styles to the  and its child components to achieve the desired smooth slide up effect.
 </current_work>
 
 <optional_next_step>
-Continue fixing the keyboard issue in  by correctly structuring the  to wrap the message list and input bar, ensuring the input stays visible when the keyboard is active.
+Continue fixing the chat screen keyboard issue by adding the necessary styles to the newly refactored  in  to finalize the smooth slide-up behavior.
 </optional_next_step>

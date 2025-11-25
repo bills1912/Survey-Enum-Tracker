@@ -35,7 +35,7 @@ cd /app/backend && python seed_data.py
 ```
 
 **Access:**
-- Web: https://datacollect-2.preview.emergentagent.com
+- Web: https://fieldtrack-15.preview.emergentagent.com
 - Mobile: Scan QR code with Expo Go app
 
 ## 📱 Screens
