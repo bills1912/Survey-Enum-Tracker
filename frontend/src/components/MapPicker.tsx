@@ -8,9 +8,10 @@ interface MapPickerProps {
   onLocationSelect: (location: { latitude: number; longitude: number }) => void;
   onClose: () => void;
   bottomInset?: number;
+  topInset?: number;
 }
 
-export default function MapPicker({ initialLocation, onLocationSelect, onClose, bottomInset = 0 }: MapPickerProps) {
+export default function MapPicker({ initialLocation, onLocationSelect, onClose, bottomInset = 0, topInset = 0 }: MapPickerProps) {
   const webViewRef = useRef<WebView>(null);
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
 
@@ -176,6 +177,12 @@ export default function MapPicker({ initialLocation, onLocationSelect, onClose, 
         onMessage={handleMessage}
       />
       
+      {/* Instruction Overlay - dengan safe area top */}
+      <View style={[styles.instructionOverlay, { top: Math.max(topInset + 16, 60) }]}>
+        <MaterialIcons name="place" size={24} color="#2196F3" />
+        <Text style={styles.instructionText}>Tap on map to pin location</Text>
+      </View>
+      
       <View style={[styles.controls, { paddingBottom: Math.max(bottomInset, 16) }]}>
         <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
           <MaterialIcons name="close" size={24} color="#F44336" />
@@ -257,6 +264,27 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
+  },
+  instructionOverlay: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  instructionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
     marginLeft: 8,
   },
 });
