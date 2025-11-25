@@ -177,6 +177,12 @@ export default function MapPicker({ initialLocation, onLocationSelect, onClose, 
         onMessage={handleMessage}
       />
       
+      {/* Instruction Overlay - dengan safe area top */}
+      <View style={[styles.instructionOverlay, { top: Math.max(topInset + 16, 60) }]}>
+        <MaterialIcons name="place" size={24} color="#2196F3" />
+        <Text style={styles.instructionText}>Tap on map to pin location</Text>
+      </View>
+      
       <View style={[styles.controls, { paddingBottom: Math.max(bottomInset, 16) }]}>
         <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
           <MaterialIcons name="close" size={24} color="#F44336" />
