@@ -11,6 +11,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -18,6 +19,7 @@ import { useNetwork } from '../../src/contexts/NetworkContext';
 import { locationTrackingService } from '../../src/services/locationTracking';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import * as Updates from 'expo-updates';
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -28,6 +30,7 @@ export default function Profile() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutCode, setLogoutCode] = useState('');
   const [randomCode, setRandomCode] = useState('');
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useEffect(() => {
     checkLocationStatus();
@@ -98,6 +101,56 @@ export default function Profile() {
     Alert.alert('Syncing...', 'Please wait while we sync your data');
     await syncNow();
     Alert.alert('Success', 'Data synced successfully');
+  };
+
+  const checkForUpdates = async () => {
+    if (!isConnected) {
+      Alert.alert('Offline', 'You need to be online to check for updates');
+      return;
+    }
+
+    setCheckingUpdate(true);
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      
+      if (update.isAvailable) {
+        Alert.alert(
+          'Update Available',
+          'A new version is available. Download now?',
+          [
+            { text: 'Later', style: 'cancel' },
+            {
+              text: 'Download',
+              onPress: async () => {
+                try {
+                  await Updates.fetchUpdateAsync();
+                  Alert.alert(
+                    'Update Downloaded',
+                    'The update has been downloaded. Restart the app to apply changes.',
+                    [
+                      { text: 'Later', style: 'cancel' },
+                      {
+                        text: 'Restart Now',
+                        onPress: () => Updates.reloadAsync(),
+                      },
+                    ]
+                  );
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to download update');
+                }
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Up to Date', 'You are using the latest version!');
+      }
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+      Alert.alert('Error', 'Failed to check for updates');
+    } finally {
+      setCheckingUpdate(false);
+    }
   };
 
   return (
@@ -190,6 +243,21 @@ export default function Profile() {
             <Text style={styles.infoValue}>{user?.id?.slice(0, 8)}...</Text>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={[styles.updateButton, !isConnected && styles.updateButtonDisabled]}
+          onPress={checkForUpdates}
+          disabled={checkingUpdate || !isConnected}
+        >
+          {checkingUpdate ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <MaterialIcons name="system-update" size={20} color="#fff" />
+          )}
+          <Text style={styles.updateButtonText}>
+            {checkingUpdate ? 'Checking...' : 'Check for Updates'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -433,6 +501,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     fontWeight: '500',
+  },
+  updateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2196F3',
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 10,
+  },
+  updateButtonDisabled: {
+    opacity: 0.5,
+  },
+  updateButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   logoutButton: {
     flexDirection: 'row',
