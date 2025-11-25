@@ -8,9 +8,10 @@ interface MapPickerProps {
   onLocationSelect: (location: { latitude: number; longitude: number }) => void;
   onClose: () => void;
   bottomInset?: number;
+  topInset?: number;
 }
 
-export default function MapPicker({ initialLocation, onLocationSelect, onClose, bottomInset = 0 }: MapPickerProps) {
+export default function MapPicker({ initialLocation, onLocationSelect, onClose, bottomInset = 0, topInset = 0 }: MapPickerProps) {
   const webViewRef = useRef<WebView>(null);
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
 
