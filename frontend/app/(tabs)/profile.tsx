@@ -103,6 +103,56 @@ export default function Profile() {
     Alert.alert('Success', 'Data synced successfully');
   };
 
+  const checkForUpdates = async () => {
+    if (!isConnected) {
+      Alert.alert('Offline', 'You need to be online to check for updates');
+      return;
+    }
+
+    setCheckingUpdate(true);
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      
+      if (update.isAvailable) {
+        Alert.alert(
+          'Update Available',
+          'A new version is available. Download now?',
+          [
+            { text: 'Later', style: 'cancel' },
+            {
+              text: 'Download',
+              onPress: async () => {
+                try {
+                  await Updates.fetchUpdateAsync();
+                  Alert.alert(
+                    'Update Downloaded',
+                    'The update has been downloaded. Restart the app to apply changes.',
+                    [
+                      { text: 'Later', style: 'cancel' },
+                      {
+                        text: 'Restart Now',
+                        onPress: () => Updates.reloadAsync(),
+                      },
+                    ]
+                  );
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to download update');
+                }
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Up to Date', 'You are using the latest version!');
+      }
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+      Alert.alert('Error', 'Failed to check for updates');
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
