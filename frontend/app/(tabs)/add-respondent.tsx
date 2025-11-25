@@ -277,6 +277,7 @@ export default function AddRespondent() {
           }}
           onClose={() => setShowMap(false)}
           bottomInset={insets.bottom}
+          topInset={insets.top}
         />
       </Modal>
     </KeyboardAvoidingView>
