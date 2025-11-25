@@ -82,10 +82,11 @@ export default function LeafletMap({
       attributionControl: true
     }).setView([${defaultCenter.latitude}, ${defaultCenter.longitude}], ${zoomLevel});
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
+    // Add Google Hybrid tiles (Satellite + Labels)
+    L.tileLayer('http://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '© Google Maps'
     }).addTo(map);
 
     // Custom icon function
