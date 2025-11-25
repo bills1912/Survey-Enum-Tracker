@@ -69,9 +69,6 @@ export default function Index() {
   if (showSplash) {
     return (
       <View style={styles.splashContainer}>
-        <View style={styles.gradientTop} />
-        <View style={styles.gradientBottom} />
-
         <Animated.View
           style={[
             styles.content,
@@ -82,35 +79,7 @@ export default function Index() {
           ]}
         >
           <View style={styles.iconContainer}>
-            <MaterialIcons name="assessment" size={80} color="#fff" />
-          </View>
-
-          <Animated.View
-            style={[
-              styles.textContainer,
-              {
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }],
-              },
-            ]}
-          >
-            <Text style={styles.appName}>Field Tracker</Text>
-            <Text style={styles.tagline}>Real-time Survey Management</Text>
-          </Animated.View>
-        </Animated.View>
-
-        <Animated.View
-          style={[
-            styles.bottomDecoration,
-            {
-              opacity: fadeAnim,
-            },
-          ]}
-        >
-          <View style={styles.loadingDots}>
-            <View style={[styles.dot, styles.dot1]} />
-            <View style={[styles.dot, styles.dot2]} />
-            <View style={[styles.dot, styles.dot3]} />
+            <MaterialIcons name="assessment" size={100} color="#fff" />
           </View>
         </Animated.View>
       </View>
