@@ -28,6 +28,7 @@ export default function AddRespondent() {
   const { isConnected } = useNetwork();
   const { selectedSurveyId } = useSurvey();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
