@@ -506,10 +506,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   codeNumber: {
-    fontSize: 56,
+    fontSize: 40,
     fontWeight: 'bold',
     color: '#1976D2',
-    letterSpacing: 12,
+    letterSpacing: 8,
   },
   instructionText: {
     fontSize: 12,
