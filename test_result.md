@@ -298,11 +298,14 @@ frontend:
     file: "/app/frontend/app/(tabs)/profile.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented profile with location tracking controls, sync status, permissions handling"
+      - working: "NA"
+        agent: "main"
+        comment: "MAJOR REDESIGN: Completely redesigned logout bottom sheet to match user's reference images. Changed from horizontal code/input layout to vertical stack. Structure now: Title 'Logout' → Subtitle question → Large code display (56px) → Instruction text → Input field (24px) → Action buttons. When keyboard opens, bottom sheet slides up smoothly and buttons are hidden from view (compact 60% height). Only code, instruction, and input visible during typing, exactly like reference images."
   
   - task: "Offline-First Architecture"
     implemented: true
