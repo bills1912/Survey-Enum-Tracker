@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Marker {
   id: string;
