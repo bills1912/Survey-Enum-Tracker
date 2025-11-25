@@ -202,7 +202,7 @@ export default function Profile() {
         <Text style={styles.footerSubtext}>Built with Expo & FastAPI</Text>
       </View>
 
-      {/* Logout Confirmation Bottom Sheet */}
+      {/* Logout Confirmation Bottom Sheet - REDESIGNED */}
       <Modal
         visible={showLogoutModal}
         transparent
@@ -214,7 +214,7 @@ export default function Profile() {
       >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <TouchableOpacity 
             style={styles.bottomSheetOverlay}
@@ -229,33 +229,47 @@ export default function Profile() {
               activeOpacity={1}
               onPress={(e) => e.stopPropagation()}
             >
-              {/* Handle Bar */}
-              <View style={styles.handleBar} />
+              {/* Close Button - Top Right */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  setShowLogoutModal(false);
+                  setLogoutCode('');
+                }}
+              >
+                <MaterialIcons name="close" size={24} color="#999" />
+              </TouchableOpacity>
 
-              {/* Header */}
+              {/* Title */}
               <Text style={styles.sheetTitle}>Logout</Text>
 
-              {/* Code Display & Input in One Row */}
-              <View style={styles.codeRow}>
-                <View style={styles.codeBox}>
-                  <Text style={styles.codeLabel}>Kode</Text>
-                  <Text style={styles.codeNumber}>{randomCode}</Text>
-                </View>
-                
-                <TextInput
-                  style={styles.verificationInput}
-                  value={logoutCode}
-                  onChangeText={setLogoutCode}
-                  keyboardType="number-pad"
-                  maxLength={3}
-                  autoFocus
-                  placeholder="000"
-                  placeholderTextColor="#CCC"
-                  textAlign="center"
-                />
+              {/* Subtitle Question */}
+              <Text style={styles.sheetSubtitle}>Apakah yakin logout?</Text>
+
+              {/* Code Display - Large & Center */}
+              <View style={styles.codeDisplay}>
+                <Text style={styles.codeNumber}>{randomCode}</Text>
               </View>
 
-              {/* Buttons */}
+              {/* Instruction Text */}
+              <Text style={styles.instructionText}>
+                Untuk melakukan aksi berikut, tolong ketik kode verifikasi dengan benar
+              </Text>
+
+              {/* Input Field */}
+              <TextInput
+                style={styles.verificationInput}
+                value={logoutCode}
+                onChangeText={setLogoutCode}
+                keyboardType="number-pad"
+                maxLength={3}
+                autoFocus
+                placeholder="000"
+                placeholderTextColor="#CCC"
+                textAlign="center"
+              />
+
+              {/* Action Buttons */}
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={[styles.actionButton, styles.cancelBtn]}
@@ -449,7 +463,7 @@ const styles = StyleSheet.create({
     color: '#ccc',
     marginTop: 4,
   },
-  // Bottom Sheet Styles - Super Compact
+  // Bottom Sheet Styles - Redesigned to Match Reference
   bottomSheetOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -459,80 +473,82 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 8,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 16,
+    maxHeight: '60%', // Compact height like in reference
   },
-  handleBar: {
-    width: 36,
-    height: 3,
-    backgroundColor: '#DDD',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 12,
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    padding: 4,
   },
   sheetTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#333',
+    color: '#1976D2',
     textAlign: 'center',
-    marginBottom: 16,
+    marginTop: 8,
+    marginBottom: 8,
   },
-  codeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  codeBox: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 12,
-  },
-  codeLabel: {
-    fontSize: 10,
+  sheetSubtitle: {
+    fontSize: 14,
     color: '#999',
-    marginBottom: 2,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  codeDisplay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    marginBottom: 16,
   },
   codeNumber: {
-    fontSize: 24,
+    fontSize: 56,
     fontWeight: 'bold',
     color: '#1976D2',
-    letterSpacing: 4,
+    letterSpacing: 12,
+  },
+  instructionText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 18,
   },
   verificationInput: {
     backgroundColor: '#F9F9F9',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    fontSize: 20,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    fontSize: 24,
     fontWeight: '600',
-    letterSpacing: 4,
-    borderWidth: 1,
+    letterSpacing: 8,
+    borderWidth: 2,
     borderColor: '#E0E0E0',
     color: '#333',
-    flex: 1,
+    marginBottom: 24,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
   },
   cancelBtn: {
     backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   cancelBtnText: {
     color: '#666',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   logoutBtn: {
@@ -540,7 +556,7 @@ const styles = StyleSheet.create({
   },
   logoutBtnText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

@@ -214,6 +214,7 @@ export default function Chat() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Chat</Text>
@@ -271,10 +272,11 @@ export default function Chat() {
         </TouchableOpacity>
       </View>
 
+      {/* Content Area with KeyboardAvoidingView */}
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {loading ? (
           <View style={styles.centerContainer}>
@@ -282,8 +284,8 @@ export default function Chat() {
           </View>
         ) : (
           <>
-            {/* Messages or FAQs */}
-            <View style={{ flex: 1 }}>
+            {/* Messages or FAQs List */}
+            <View style={styles.messagesContainer}>
               {activeTab === 'ai' && messages.length === 0 ? (
                 <FlatList
                   data={faqs}
@@ -323,7 +325,7 @@ export default function Chat() {
               )}
             </View>
 
-            {/* Input Container */}
+            {/* Input Container - This will slide up with keyboard */}
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.input}
@@ -442,6 +444,12 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#2196F3',
     fontWeight: '600',
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  messagesContainer: {
+    flex: 1,
   },
   faqList: {
     padding: 16,
