@@ -1013,7 +1013,6 @@ const styles = StyleSheet.create({
   },
   myLocationButton: {
     position: 'absolute',
-    right: 16,
     width: 48,
     height: 48,
     borderRadius: 24,
