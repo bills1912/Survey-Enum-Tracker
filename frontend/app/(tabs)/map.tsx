@@ -641,6 +641,94 @@ export default function MapScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Basemap Picker Modal */}
+      <Modal
+        visible={showBasemapPicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowBasemapPicker(false)}
+      >
+        <TouchableOpacity
+          style={styles.statusModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowBasemapPicker(false)}
+        >
+          <View style={styles.statusModalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.statusModalTitle}>Select Basemap</Text>
+            <Text style={styles.statusModalSubtitle}>
+              Choose your preferred map style
+            </Text>
+            
+            <TouchableOpacity
+              style={[
+                styles.basemapOptionButton,
+                basemap === 'osm' && styles.basemapOptionSelected
+              ]}
+              onPress={() => {
+                setBasemap('osm');
+                setShowBasemapPicker(false);
+              }}
+            >
+              <MaterialIcons name="map" size={24} color={basemap === 'osm' ? '#4CAF50' : '#666'} />
+              <View style={styles.basemapTextContainer}>
+                <Text style={[styles.basemapOptionText, basemap === 'osm' && styles.basemapOptionTextSelected]}>
+                  OpenStreetMap
+                </Text>
+                <Text style={styles.basemapOptionSubtext}>Standard street map</Text>
+              </View>
+              {basemap === 'osm' && <MaterialIcons name="check-circle" size={24} color="#4CAF50" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[
+                styles.basemapOptionButton,
+                basemap === 'satellite' && styles.basemapOptionSelected
+              ]}
+              onPress={() => {
+                setBasemap('satellite');
+                setShowBasemapPicker(false);
+              }}
+            >
+              <MaterialIcons name="satellite" size={24} color={basemap === 'satellite' ? '#4CAF50' : '#666'} />
+              <View style={styles.basemapTextContainer}>
+                <Text style={[styles.basemapOptionText, basemap === 'satellite' && styles.basemapOptionTextSelected]}>
+                  Google Satellite
+                </Text>
+                <Text style={styles.basemapOptionSubtext}>Satellite imagery only</Text>
+              </View>
+              {basemap === 'satellite' && <MaterialIcons name="check-circle" size={24} color="#4CAF50" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[
+                styles.basemapOptionButton,
+                basemap === 'hybrid' && styles.basemapOptionSelected
+              ]}
+              onPress={() => {
+                setBasemap('hybrid');
+                setShowBasemapPicker(false);
+              }}
+            >
+              <MaterialIcons name="layers" size={24} color={basemap === 'hybrid' ? '#4CAF50' : '#666'} />
+              <View style={styles.basemapTextContainer}>
+                <Text style={[styles.basemapOptionText, basemap === 'hybrid' && styles.basemapOptionTextSelected]}>
+                  Google Hybrid
+                </Text>
+                <Text style={styles.basemapOptionSubtext}>Satellite with labels</Text>
+              </View>
+              {basemap === 'hybrid' && <MaterialIcons name="check-circle" size={24} color="#4CAF50" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowBasemapPicker(false)}
+            >
+              <Text style={styles.cancelButtonText}>Batal</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
