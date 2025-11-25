@@ -37,18 +37,18 @@ export default function Index() {
       }),
     ]).start();
 
-    // Hide splash after 3.5 seconds
+    // Hide splash after 2 seconds
     const timer = setTimeout(() => {
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 500,
+          duration: 400,
           useNativeDriver: true,
         }),
       ]).start(() => {
         setShowSplash(false);
       });
-    }, 3500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
