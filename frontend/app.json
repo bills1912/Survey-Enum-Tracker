@@ -36,6 +36,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#2196F3"
       },
+      "splash": {
+        "image": "./assets/images/icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#2196F3"
+      },
       "edgeToEdgeEnabled": true,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
