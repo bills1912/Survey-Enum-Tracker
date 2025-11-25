@@ -497,13 +497,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   codeDisplay: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    marginBottom: 12,
+    paddingVertical: 6,
+    marginBottom: 8,
   },
   codeNumber: {
     fontSize: 40,
