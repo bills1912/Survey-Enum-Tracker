@@ -1127,4 +1127,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
+  basemapOptionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  basemapOptionSelected: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#4CAF50',
+  },
+  basemapTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  basemapOptionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  basemapOptionTextSelected: {
+    color: '#4CAF50',
+  },
+  basemapOptionSubtext: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
 });
