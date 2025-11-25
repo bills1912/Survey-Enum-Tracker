@@ -233,32 +233,27 @@ export default function Profile() {
               <View style={styles.handleBar} />
 
               {/* Header */}
-              <View style={styles.sheetHeader}>
-                <Text style={styles.sheetTitle}>Logout</Text>
-                <Text style={styles.sheetSubtitle}>Apakah yakin logout ?</Text>
+              <Text style={styles.sheetTitle}>Logout</Text>
+
+              {/* Code Display & Input in One Row */}
+              <View style={styles.codeRow}>
+                <View style={styles.codeBox}>
+                  <Text style={styles.codeLabel}>Kode</Text>
+                  <Text style={styles.codeNumber}>{randomCode}</Text>
+                </View>
+                
+                <TextInput
+                  style={styles.verificationInput}
+                  value={logoutCode}
+                  onChangeText={setLogoutCode}
+                  keyboardType="number-pad"
+                  maxLength={3}
+                  autoFocus
+                  placeholder="000"
+                  placeholderTextColor="#CCC"
+                  textAlign="center"
+                />
               </View>
-
-              {/* Code Display */}
-              <View style={styles.codeDisplayBox}>
-                <Text style={styles.codeNumber}>{randomCode}</Text>
-              </View>
-
-              {/* Instruction */}
-              <Text style={styles.instruction}>
-                Untuk melakukan aksi berikut, tolong ketik kode{'\n'}verifikasi dengan benar
-              </Text>
-
-              {/* Input Field */}
-              <TextInput
-                style={styles.verificationInput}
-                value={logoutCode}
-                onChangeText={setLogoutCode}
-                keyboardType="number-pad"
-                maxLength={3}
-                autoFocus
-                placeholder=""
-                textAlign="center"
-              />
 
               {/* Buttons */}
               <View style={styles.buttonRow}>
