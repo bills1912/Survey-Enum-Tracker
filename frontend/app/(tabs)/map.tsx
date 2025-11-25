@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useNetwork } from '../../src/contexts/NetworkContext';
 import { useSurvey } from '../../src/contexts/SurveyContext';
@@ -36,6 +37,7 @@ export default function MapScreen() {
   const { isConnected } = useNetwork();
   const { selectedSurveyId } = useSurvey();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [respondents, setRespondents] = useState<Respondent[]>([]);
   const [locations, setLocations] = useState<LocationTracking[]>([]);
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -46,6 +48,7 @@ export default function MapScreen() {
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [myLocation, setMyLocation] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map'); // Leaflet map works in Expo Go!
+  const [centeringLocation, setCenteringLocation] = useState(false);
   const [selectedRespondent, setSelectedRespondent] = useState<Respondent | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedRespondentForStatus, setSelectedRespondentForStatus] = useState<Respondent | null>(null);
@@ -83,6 +86,33 @@ export default function MapScreen() {
       });
     } catch (error) {
       console.error('Error getting current location:', error);
+    }
+  };
+
+  const centerToMyLocation = async () => {
+    setCenteringLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to show your position on the map');
+        setCenteringLocation(false);
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setMyLocation(location.coords);
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+      setSelectedRespondent(null); // Clear any selected respondent
+    } catch (error) {
+      console.error('Error getting current location:', error);
+      Alert.alert('Error', 'Failed to get your current location');
+    } finally {
+      setCenteringLocation(false);
     }
   };
 
@@ -384,14 +414,14 @@ export default function MapScreen() {
           activeOpacity={1}
           onPress={() => setShowSurveyPicker(false)}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: insets.bottom + 16 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Survey</Text>
               <TouchableOpacity onPress={() => setShowSurveyPicker(false)}>
                 <MaterialIcons name="close" size={24} color="#333" />
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.surveyList}>
+            <ScrollView style={styles.surveyList} contentContainerStyle={{ paddingBottom: 16 }}>
               <TouchableOpacity
                 style={[
                   styles.surveyItem,
@@ -458,7 +488,7 @@ export default function MapScreen() {
           data={respondents}
           keyExtractor={(item) => item.id}
           renderItem={renderLocationItem}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + 16 }]}
           ListHeaderComponent={
             <View style={styles.listHeader}>
               <MaterialIcons name="info-outline" size={24} color="#2196F3" />
@@ -516,7 +546,7 @@ export default function MapScreen() {
           />
 
           {/* Legend */}
-          <View style={styles.legend}>
+          <View style={[styles.legend, { bottom: insets.bottom + 8 }]}>
             <Text style={styles.legendTitle}>Legend</Text>
             <View style={styles.legendItem}>
               <View style={[styles.legendColor, { backgroundColor: '#F44336' }]} />
@@ -537,6 +567,18 @@ export default function MapScreen() {
               </View>
             )}
           </View>
+          {/* My Location Button */}
+          <TouchableOpacity
+            style={[styles.myLocationButton, { bottom: insets.bottom + 140 }]}
+            onPress={centerToMyLocation}
+            disabled={centeringLocation}
+          >
+            {centeringLocation ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <MaterialIcons name="my-location" size={24} color="#fff" />
+            )}
+          </TouchableOpacity>
         </>
       )}
 
@@ -957,5 +999,20 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 16,
     fontWeight: '600',
+  },
+  myLocationButton: {
+    position: 'absolute',
+    right: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#2196F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
 });
