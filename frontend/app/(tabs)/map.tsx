@@ -37,6 +37,7 @@ export default function MapScreen() {
   const { isConnected } = useNetwork();
   const { selectedSurveyId } = useSurvey();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [respondents, setRespondents] = useState<Respondent[]>([]);
   const [locations, setLocations] = useState<LocationTracking[]>([]);
   const [surveys, setSurveys] = useState<Survey[]>([]);
