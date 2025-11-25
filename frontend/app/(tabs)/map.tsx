@@ -545,6 +545,7 @@ export default function MapScreen() {
             }
             userLocation={myLocation}
             showRouting={!!selectedRespondent && user?.role === 'enumerator'}
+            basemap={basemap}
           />
 
           {/* Legend */}
