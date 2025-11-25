@@ -89,6 +89,33 @@ export default function MapScreen() {
     }
   };
 
+  const centerToMyLocation = async () => {
+    setCenteringLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to show your position on the map');
+        setCenteringLocation(false);
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setMyLocation(location.coords);
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+      setSelectedRespondent(null); // Clear any selected respondent
+    } catch (error) {
+      console.error('Error getting current location:', error);
+      Alert.alert('Error', 'Failed to get your current location');
+    } finally {
+      setCenteringLocation(false);
+    }
+  };
+
   const loadSurveys = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
