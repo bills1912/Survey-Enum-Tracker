@@ -276,6 +276,7 @@ export default function AddRespondent() {
             Alert.alert('Success', 'Location selected successfully!');
           }}
           onClose={() => setShowMap(false)}
+          bottomInset={insets.bottom}
         />
       </Modal>
     </KeyboardAvoidingView>
