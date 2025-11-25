@@ -176,7 +176,7 @@ export default function MapPicker({ initialLocation, onLocationSelect, onClose, 
         onMessage={handleMessage}
       />
       
-      <View style={styles.controls}>
+      <View style={[styles.controls, { paddingBottom: Math.max(bottomInset, 16) }]}>
         <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
           <MaterialIcons name="close" size={24} color="#F44336" />
           <Text style={styles.cancelButtonText}>Cancel</Text>
