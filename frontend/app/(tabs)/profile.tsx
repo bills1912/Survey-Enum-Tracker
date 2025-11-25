@@ -243,6 +243,21 @@ export default function Profile() {
             <Text style={styles.infoValue}>{user?.id?.slice(0, 8)}...</Text>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={[styles.updateButton, !isConnected && styles.updateButtonDisabled]}
+          onPress={checkForUpdates}
+          disabled={checkingUpdate || !isConnected}
+        >
+          {checkingUpdate ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <MaterialIcons name="system-update" size={20} color="#fff" />
+          )}
+          <Text style={styles.updateButtonText}>
+            {checkingUpdate ? 'Checking...' : 'Check for Updates'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
