@@ -30,6 +30,7 @@ export default function Profile() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutCode, setLogoutCode] = useState('');
   const [randomCode, setRandomCode] = useState('');
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useEffect(() => {
     checkLocationStatus();
