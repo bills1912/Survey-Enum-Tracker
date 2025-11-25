@@ -518,7 +518,7 @@ export default function MapScreen() {
           />
 
           {/* Legend */}
-          <View style={styles.legend}>
+          <View style={[styles.legend, { bottom: insets.bottom + 8 }]}>
             <Text style={styles.legendTitle}>Legend</Text>
             <View style={styles.legendItem}>
               <View style={[styles.legendColor, { backgroundColor: '#F44336' }]} />
