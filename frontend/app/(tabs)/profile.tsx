@@ -11,6 +11,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -18,6 +19,7 @@ import { useNetwork } from '../../src/contexts/NetworkContext';
 import { locationTrackingService } from '../../src/services/locationTracking';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import * as Updates from 'expo-updates';
 
 export default function Profile() {
   const { user, logout } = useAuth();
