@@ -185,7 +185,8 @@ def get_stats():
         {"$group": {"_id": "$status", "count": {"$sum": 1}}}
     ]
     for result in db.surveys.aggregate(pipeline):
-        print(f"    {result['_id']:<15} {result['count']:>6}")
+        status = result['_id'] if result['_id'] else 'None'
+        print(f"    {status:<15} {result['count']:>6}")
     
     print("="*50)
 
