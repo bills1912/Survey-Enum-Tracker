@@ -115,6 +115,8 @@ class Survey(BaseModel):
     created_by: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     is_active: bool = True
+    geojson_path: Optional[str] = None
+    geojson_filter_field: Optional[str] = None
 
 class SurveyCreate(BaseModel):
     title: str
@@ -125,6 +127,8 @@ class SurveyCreate(BaseModel):
     region_name: str
     supervisor_ids: List[str] = []
     enumerator_ids: List[str] = []
+    geojson_path: Optional[str] = None
+    geojson_filter_field: Optional[str] = None
 
 class RespondentLocation(BaseModel):
     latitude: float
