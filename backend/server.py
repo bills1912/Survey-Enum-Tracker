@@ -917,25 +917,7 @@ async def get_public_surveys():
         logger.error(f"Error fetching public surveys: {e}")
         return []
 
-# Include router
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Database Web Viewer Endpoint
+# Database Web Viewer Endpoint - must be before include_router
 @app.get("/database-viewer", response_class=HTMLResponse)
 async def database_viewer():
     """Simple web interface for database viewing"""
