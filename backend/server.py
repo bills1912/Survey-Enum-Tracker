@@ -1,7 +1,7 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Request, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -115,6 +115,8 @@ class Survey(BaseModel):
     created_by: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     is_active: bool = True
+    geojson_path: Optional[str] = None
+    geojson_filter_field: Optional[str] = None
 
 class SurveyCreate(BaseModel):
     title: str
@@ -125,6 +127,8 @@ class SurveyCreate(BaseModel):
     region_name: str
     supervisor_ids: List[str] = []
     enumerator_ids: List[str] = []
+    geojson_path: Optional[str] = None
+    geojson_filter_field: Optional[str] = None
 
 class RespondentLocation(BaseModel):
     latitude: float
@@ -917,9 +921,107 @@ async def get_public_surveys():
         logger.error(f"Error fetching public surveys: {e}")
         return []
 
-# Include router
+# Database Web Viewer Endpoint - must be before include_router
+@app.get("/database-viewer", response_class=HTMLResponse)
+async def database_viewer():
+    """Simple web interface for database viewing"""
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Viewer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #2196F3; color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin: 10px; display: inline-block; min-width: 200px; }
+        .stat-value { font-size: 36px; font-weight: bold; }
+        .stat-label { font-size: 14px; opacity: 0.9; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        .btn { background: #2196F3; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Field Tracker Database</h1>
+            <p>Database Viewer</p>
+        </div>
+        <div class="content">
+            <h2>Quick Stats</h2>
+            <div id="stats">Loading...</div>
+            
+            <h2 style="margin-top: 30px;">Collections</h2>
+            <button class="btn" onclick="loadCollection('users')">Users</button>
+            <button class="btn" onclick="loadCollection('surveys')">Surveys</button>
+            <button class="btn" onclick="loadCollection('respondents')">Respondents</button>
+            <button class="btn" onclick="loadCollection('locations')">Locations</button>
+            <button class="btn" onclick="loadCollection('messages')">Messages</button>
+            <button class="btn" onclick="loadCollection('faqs')">FAQs</button>
+            
+            <div id="data" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function loadStats() {
+            const res = await fetch('/api/database/stats');
+            const data = await res.json();
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${data.users}</div><div class="stat-label">Users</div></div>
+                <div class="stat-card"><div class="stat-value">${data.surveys}</div><div class="stat-label">Surveys</div></div>
+                <div class="stat-card"><div class="stat-value">${data.respondents}</div><div class="stat-label">Respondents</div></div>
+                <div class="stat-card"><div class="stat-value">${data.locations}</div><div class="stat-label">Locations</div></div>
+            `;
+        }
+        
+        async function loadCollection(name) {
+            document.getElementById('data').innerHTML = '<p>Loading...</p>';
+            const res = await fetch('/api/database/collection/' + name);
+            const data = await res.json();
+            document.getElementById('data').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+        
+        loadStats();
+    </script>
+</body>
+</html>
+    """
+
+@app.get("/api/database/stats")
+async def get_database_stats():
+    """Get database statistics"""
+    return {
+        "users": await db["users"].count_documents({}),
+        "surveys": await db["surveys"].count_documents({}),
+        "respondents": await db["respondents"].count_documents({}),
+        "locations": await db["locations"].count_documents({}),
+        "messages": await db["messages"].count_documents({}),
+        "faqs": await db["faqs"].count_documents({})
+    }
+
+@app.get("/api/database/collection/{collection_name}")
+async def get_collection_data(collection_name: str):
+    """Get data from a collection"""
+    if collection_name not in ["users", "surveys", "respondents", "locations", "messages", "faqs"]:
+        raise HTTPException(status_code=400, detail="Invalid collection")
+    
+    data = await db[collection_name].find().limit(100).to_list(100)
+    
+    # Convert ObjectId to string
+    for item in data:
+        if "_id" in item:
+            item["_id"] = str(item["_id"])
+    
+    return data
+
+# Include API router
 app.include_router(api_router)
 
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
