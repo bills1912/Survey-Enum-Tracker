@@ -30,12 +30,16 @@ def list_surveys():
     print("\n" + "="*60)
     print("📋 SURVEYS")
     print("="*60)
+    if not surveys:
+        print("\n⚠️ No surveys found in database")
+        return
+    print(f"\nTotal surveys: {len(surveys)}\n")
     for s in surveys:
         print(f"\nID: {s['_id']}")
         print(f"  Title: {s['title']}")
         print(f"  Region: {s.get('region_name', 'N/A')}")
         print(f"  Active: {s.get('is_active', True)}")
-        print(f"  Dates: {s['start_date']} - {s['end_date']}")
+        print(f"  Dates: {s.get('start_date', 'N/A')} - {s.get('end_date', 'N/A')}")
 
 def add_survey(data):
     """Add new survey"""
