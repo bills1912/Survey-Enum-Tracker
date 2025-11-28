@@ -137,6 +137,8 @@ class RespondentLocation(BaseModel):
 class Respondent(BaseModel):
     id: Optional[str] = None
     name: str
+    phone: str
+    address: str
     location: RespondentLocation
     status: str = SurveyStatus.PENDING
     survey_id: str  # Link to survey
@@ -145,12 +147,16 @@ class Respondent(BaseModel):
     survey_data: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    regionCode: str
 
 class RespondentCreate(BaseModel):
     name: str
+    phone: str
+    address: str
     location: RespondentLocation
     survey_id: str
     enumerator_id: Optional[str] = None
+    regionCode: str
 
 class RespondentUpdate(BaseModel):
     status: Optional[str] = None
