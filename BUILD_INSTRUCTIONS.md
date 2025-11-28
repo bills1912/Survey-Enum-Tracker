@@ -7,7 +7,7 @@
 
 ### **Backend URL:**
 ```
-https://fieldtrack-15.preview.emergentagent.com
+https://field-monitor-5.preview.emergentagent.com
 ```
 
 ### **Status:**
@@ -23,7 +23,7 @@ https://fieldtrack-15.preview.emergentagent.com
 ### **Prerequisites:**
 1. ✅ EAS CLI installed: `npm install -g eas-cli`
 2. ✅ Expo account logged in: `eas login`
-3. ✅ Backend URL configured: `https://fieldtrack-15.preview.emergentagent.com`
+3. ✅ Backend URL configured: `https://field-monitor-5.preview.emergentagent.com`
 
 ---
 
@@ -142,7 +142,7 @@ eas update:rollback --branch production
 
 **File: `/app/frontend/.env`**
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://fieldtrack-15.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://field-monitor-5.preview.emergentagent.com
 ```
 
 **File: `/app/frontend/eas.json`**
@@ -153,22 +153,22 @@ EXPO_PUBLIC_BACKEND_URL=https://fieldtrack-15.preview.emergentagent.com
     "buildType": "apk"
   },
   "env": {
-    "EXPO_PUBLIC_BACKEND_URL": "https://fieldtrack-15.preview.emergentagent.com"
+    "EXPO_PUBLIC_BACKEND_URL": "https://field-monitor-5.preview.emergentagent.com"
   }
 }
 ```
 
 ### **Backend Endpoints:**
-- Base URL: `https://fieldtrack-15.preview.emergentagent.com`
+- Base URL: `https://field-monitor-5.preview.emergentagent.com`
 - API Prefix: `/api`
-- Example: `https://fieldtrack-15.preview.emergentagent.com/api/auth/login`
+- Example: `https://field-monitor-5.preview.emergentagent.com/api/auth/login`
 
 ---
 
 ## ⚠️ **IMPORTANT NOTES**
 
 ### **1. Backend URL is PERMANENT**
-- URL `https://fieldtrack-15.preview.emergentagent.com` is embedded in APK
+- URL `https://field-monitor-5.preview.emergentagent.com` is embedded in APK
 - If backend URL changes → **MUST REBUILD APK**
 - OTA updates **CANNOT** change backend URL
 
@@ -312,7 +312,7 @@ All configurations are verified and ready. You can now:
 4. **Distribute** to users
 5. **Update** anytime with OTA updates
 
-**Backend URL:** https://fieldtrack-15.preview.emergentagent.com ✅  
+**Backend URL:** https://field-monitor-5.preview.emergentagent.com ✅  
 **Configuration:** Verified ✅  
 **Ready to Build:** YES ✅
 

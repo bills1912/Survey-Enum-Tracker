@@ -72,7 +72,7 @@ Password: enum123
 
 ### Backend URL (sudah dikonfigurasi di .env):
 ```
-https://fieldtrack-15.preview.emergentagent.com/api
+https://field-monitor-5.preview.emergentagent.com/api
 ```
 
 ## 🔥 Quick Commands

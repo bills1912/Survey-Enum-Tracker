@@ -35,7 +35,7 @@
 /app/export_database.sh
 
 # 2. Download dari:
-https://fieldtrack-15.preview.emergentagent.com/api/download/backup_TIMESTAMP.tar.gz
+https://field-monitor-5.preview.emergentagent.com/api/download/backup_TIMESTAMP.tar.gz
 
 # 3. Extract & view:
 tar -xzf backup_TIMESTAMP.tar.gz
@@ -178,7 +178,7 @@ sudo supervisorctl restart backend
 
 **Method A: Via API (jika endpoint added):**
 ```
-https://fieldtrack-15.preview.emergentagent.com/api/download/backup_20251128_021633.tar.gz
+https://field-monitor-5.preview.emergentagent.com/api/download/backup_20251128_021633.tar.gz
 ```
 
 **Method B: Via Command:**

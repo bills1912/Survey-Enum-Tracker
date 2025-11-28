@@ -1,44 +1,42 @@
 <analysis>
-The trajectory details an intensive development and debugging cycle for a field data collection application. The initial phase focused on core features, but the work quickly shifted to resolving a series of critical issues reported by the user.
+The trajectory chronicles an extensive and highly iterative development cycle for a field data collection application. The work began by addressing user-reported UI/UX bugs and quickly evolved into a series of significant feature enhancements and architectural changes, all driven by specific, often visual, user feedback.
 
-A major data loss incident occurred when a seeding script () wiped the database. This was resolved by creating and running a  script that salvaged existing survey data and reconstructed related user and respondent information.
+Key workstreams included:
+1.  **UI/UX Refinement:** A major focus was on polishing the user interface. This involved multiple rounds of fixes for keyboard handling in the chat screen, a complete redesign of the logout confirmation to a custom bottom sheet, and meticulous adjustments to viewports on the map and data entry screens to respect device safe areas (notches and navigation bars).
+2.  **Build & Deployment:** The engineer guided the user through setting up Expo Application Services (EAS) for Over-the-Air (OTA) updates, including creating configuration files, adding a manual update check button, and clarifying the backend URL configuration for production builds.
+3.  **Map Features:** The map screen was significantly enhanced. The basemap was made configurable (OpenStreetMap, Google Hybrid/Satellite), a re-center button was added, and viewport issues were resolved.
+4.  **Database Management:** A substantial portion of the work involved the database. The engineer first provided web-based access to the local MongoDB instance by adding a custom endpoint to the FastAPI backend. Following a user request, a full database migration was performed to align the  collection with a user-provided Dart model, adding new fields. Finally, guides and scripts were created to allow the user to directly connect to and manipulate the database.
 
-The most persistent challenge has been the user's inability to connect to the application via Expo Go. This was traced to the cloud Kubernetes environment, where the embedded ngrok tunnel in Expo's CI mode fails to correctly generate or expose the  URL. Despite numerous attempts to fix environment variables, restart services, and clear caches, the issue remained. This led to a strategic pivot: guiding the user to build a standalone APK using Expo Application Services (EAS), which involved creating , installing , and providing detailed build instructions.
-
-Alongside this, several UI/UX bugs and feature requests were addressed:
-1.  Fixing a login redirect to a non-existent dashboard.
-2.  Patching crashes on the Map and List views due to data structure inconsistencies after the data restore.
-3.  Adjusting the bottom tab bar to accommodate system navigation buttons.
-4.  Implementing a sophisticated offline synchronization mechanism for location tracking.
-5.  Completely redesigning the logout confirmation from a standard modal to a compact, aesthetic bottom sheet as requested by the user.
-
-The user's language is **Bahasa Indonesia**. The next agent must respond in **Bahasa Indonesia**.
+The user's primary language is **Bahasa Indonesia**. All future communications should be in this language.
 </analysis>
 
 <product_requirements>
-The goal is to build a multi-user, real-time device tracking application for monitoring field data collection activities, with a strong emphasis on offline capabilities.
+The project is a multi-user, real-time device tracking application for monitoring field data collection activities, with a strong emphasis on offline capabilities.
 
-**Core Components:**
-*   **Mobile App (React Native/Expo):** For Enumerators and Supervisors to conduct surveys, track their location, update respondent status, and communicate via chat. The app must function reliably in areas with poor or no internet connectivity.
-*   **Backend (FastAPI/MongoDB):** To manage users, surveys, respondents, and real-time location data.
-*   **Web Dashboard:** For administrative overview and user management.
+**Core User Roles:**
+*   **Enumerator:** Conducts surveys in the field, tracks location, and updates respondent data.
+*   **Supervisor:** Monitors enumerators.
+*   **Admin:** Manages users, surveys, and views overall progress.
 
 **Key Features & Recent Implementations:**
-*   **Real-time & Offline Tracking:** Location data is tracked and visualized on a map. A new offline synchronization system has been implemented to queue location updates and other data, syncing automatically when connectivity is restored.
-*   **UI/UX Enhancements:**
-    *   The app icon was updated.
-    *   The logout confirmation was redesigned from a central modal to a compact, non-intrusive bottom sheet with a numeric-only keyboard, as per user's visual reference.
-*   **Bug Fixes:** Resolved data loss, fixed crashes on map/list views post-data-restore, and corrected login redirection.
-*   **Build Process:** Shifted from relying on Expo Go (due to persistent environment issues) to building a standalone production APK via EAS Build.
+*   **Real-time & Offline Location Tracking:** Enumerator locations are tracked and displayed on a map.
+*   **Data Collection:** Forms for adding respondents and tagging their locations.
+*   **UI/UX Overhaul:**
+    *   The logout process was redesigned into a compact bottom sheet.
+    *   Keyboard overlap issues in the chat were resolved.
+    *   Multiple screens (, ) were fixed to respect device safe areas (notches and navigation bars).
+    *   The native and JavaScript-based splash screens were simplified to be icon-only.
+*   **Map Enhancements:** A basemap selector (OpenStreetMap, Google Satellite, Google Hybrid) and a re-center to my location button were added.
+*   **Database Schema Migration:** The  collection schema was updated to include  and  to match a new data model provided by the user.
+*   **Deployment:** The project is configured for EAS Build and OTA updates.
 </product_requirements>
 
 <key_technical_concepts>
-- **Full-Stack:** Expo (React Native), FastAPI (Python), MongoDB.
-- **Authentication:** JWT (JSON Web Tokens).
-- **Build/Deployment:** Expo Application Services (EAS) for building standalone APKs.
-- **Offline Synchronization:** Using  to queue data (locations, etc.) and a custom  with retry logic to send data to the backend when online.
-- **Keyboard Handling:**  to prevent keyboard from obscuring input fields, a recurring focus for UI refinement.
-- **UI Components:** Use of custom Modals and the implementation of a Bottom Sheet for improved UX.
+- **Full-Stack:** Expo (React Native) frontend, FastAPI (Python) backend, MongoDB database.
+- **UI/UX:** Heavy use of  for viewport correctness, and  for input handling.
+- **Deployment:** Expo Application Services (EAS) for building production APKs and delivering Over-the-Air (OTA) updates.
+- **Database:** Direct database access scripts (Python), schema migration scripts, and exposing a database viewer via a custom FastAPI endpoint.
+- **Mapping:** Integration with a Leaflet-based map component, with support for multiple tile layers (basemaps).
 </key_technical_concepts>
 
 <code_architecture>
@@ -47,45 +45,99 @@ The project is a monorepo with  and  directories.
 
 
 -   ****
-    -   **Importance:** A critical one-off script created to fix a major data loss incident.
-    -   **Summary of changes:** Created from scratch to read existing surveys, recreate users (admin, supervisors, enumerators) with new s, and then repopulate respondents and locations, associating them with the newly created user IDs. This saved the project's historical data.
+    -   **Importance:** The main map screen for visualizing location data.
+    -   **Summary of changes:** This file was heavily refactored.  was added to fix bottom viewport overlap. State management for the current basemap () was introduced. A modal for selecting the basemap was added. A floating button to re-center the map was implemented, and its position was adjusted to the bottom-left corner based on user feedback.
 
 -   ****
-    -   **Importance:** Core configuration file for the Expo app.
-    -   **Summary of changes:** Heavily modified to fix multiple issues.
-        1.  The  and  paths were updated to use a new icon derived from the splash screen image.
-        2.  Added  configuration (, , ) to enable EAS Updates (OTA).
-        3.  Added iOS-specific configurations (, permission strings) to prepare for an iOS build.
+    -   **Importance:** A reusable component for selecting a location on a map, used in the Add Respondent flow.
+    -   **Summary of changes:** It was updated to accept  as props. This allowed applying  and  to its internal controls, fixing UI overlap with both the system navigation bar at the bottom and the device camera/notch at the top.
 
 -   ****
-    -   **Importance:** Defines build profiles for Expo Application Services (EAS).
-    -   **Summary of changes:** Created from scratch to facilitate building a standalone APK, bypassing the problematic Expo Go environment. It contains , , and  profiles, with the latter configured for a fully standalone app ().
+    -   **Importance:** The main FastAPI application file defining all API endpoints.
+    -   **Summary of changes:** A new HTML endpoint () was added to provide a web-based view of the MongoDB collections. The Pydantic models for  were updated to include the new optional fields:  and , ensuring the API could process and return the new data structure.
 
 -   ****
-    -   **Importance:** Contains user profile information and the logout functionality.
-    -   **Summary of changes:** The logout confirmation was completely refactored. The original  was replaced with a custom bottom sheet implementation that is minimal, appears from the bottom, and uses a  to ensure the numeric input for the logout code is always visible above the keyboard, matching the user's provided screenshots.
+    -   **Importance:** A newly created, one-time script to perform a database schema migration.
+    -   **Summary of changes:** Created from scratch to iterate through all documents in the  collection and add the new  and  with default  values, aligning the database with the user's new Dart model.
 
 -   ****
-    -   **Importance:** The form for adding new survey respondents.
-    -   **Summary of changes:** The  function was fixed to send the correct data structure to the backend. It now includes the required , formats  as an object, and includes new optional fields (, ) in the payload. The UI was also updated to include input fields for phone and address.
+    -   **Importance:** The core configuration file for the Expo app.
+    -   **Summary of changes:** The  configuration was modified to ensure the native splash screen uses a cover resize mode with a plain background color and a single icon image, removing any default text or logos from the pre-load screen in the final APK build.
 
 -   ****
-    -   **Importance:** The in-app messaging screen.
-    -   **Summary of changes:** This file is the subject of the current work. The user reported that the keyboard covers the text input. An initial fix was attempted, but the user requested a more polished behavior similar to modern chat apps. The last action was refactoring the JSX to wrap the entire screen content in a  with a more robust structure.
+    -   **Importance:** The initial loading screen of the React Native app.
+    -   **Summary of changes:** This file contained a custom animated splash screen with text. It was simplified to show only the application icon, removing the Field Tracker and Real-time Survey Management text to create a cleaner loading experience.
 </code_architecture>
 
 <pending_tasks>
-- **Finalize Chat Keyboard Fix:** Complete the refactor of  by adding the necessary styles to ensure the input field slides up smoothly above the keyboard.
-- **Implement Survey Detail Screen:** The  screen is still a placeholder and needs to be fully implemented.
-- **End-to-End Testing:** The offline synchronization feature needs to be thoroughly tested by the user in a real-world scenario (by building the APK). The bulk user upload feature also needs testing.
+- **End-to-End Testing:** The user needs to perform comprehensive testing of the application, especially the offline sync features, by installing the newly built APK on a physical device.
+- **Implement Survey Detail Screen:** The file for displaying survey details () is likely still a placeholder and needs to be fully implemented.
+- **Connect to MongoDB Atlas:** The user needs to follow the guidance to whitelist their IP in MongoDB Atlas to establish a connection using Compass or the provided scripts.
 </pending_tasks>
 
 <current_work>
-The AI engineer was actively fixing a UI/UX bug on the chat screen (). The user reported that the keyboard obscures the text input field, making it impossible to see what is being typed. The user explicitly requested a behavior similar to modern chat applications like Gemini or OpenAI, where the input field smoothly slides up and remains visible above the keyboard.
+The most recent work was a direct response to the user's request to manipulate the database. After successfully migrating the  collection to a new schema matching the user's Dart model, the AI engineer provided comprehensive tools and guides for direct database interaction.
 
-The previous engineer identified that the existing  implementation was suboptimal. A significant refactoring of the component's structure was started. The last action taken was editing  to wrap the entire screen—the message list () and the input bar ()—within a single, top-level . This sets up the correct structure, but the styling adjustments to make it work have not yet been applied. The next step is to add the necessary styles to the  and its child components to achieve the desired smooth slide up effect.
+This involved:
+1.  **Creating a Guide:** A new file, , was created. This guide explains how to connect to the database using MongoDB Compass (GUI) and the command-line (Current Mongosh Log ID:	69290ea80816aa6d75b1ddf3
+Connecting to:		mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.9
+Using MongoDB:		7.0.26
+Using Mongosh:		2.5.9
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+
+To help improve our products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.com/legal/privacy-policy).
+You can opt-out by running the disableTelemetry() command.
+
+------
+   The server generated these startup warnings when booting
+   2025-11-28T02:53:25.634+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+   2025-11-28T02:53:26.891+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2025-11-28T02:53:26.891+00:00: You are running this process as the root user, which is not recommended
+   2025-11-28T02:53:26.891+00:00: Soft rlimits for open file descriptors too low
+------
+
+test> ).
+2.  **Creating a Script:** A Python script, ============================================================
+🗄️ DATABASE MANIPULATION SCRIPT
+============================================================
+
+Connected to: field_tracker_db
+MongoDB: mongodb://localhost:27017...
+
+============================================================
+🗄️ DATABASE MANIPULATION MENU
+============================================================
+
+📋 SURVEYS:
+  1. List all surveys
+  2. Add survey
+  3. Update survey
+  4. Delete survey
+  5. Bulk update surveys
+
+👥 USERS:
+  6. List all users
+  7. Add user
+  8. Update user
+  9. Delete user
+
+👤 RESPONDENTS:
+  10. List all respondents
+  11. Add respondent
+  12. Update respondent
+  13. Delete respondent
+  14. Bulk update respondents
+
+❌ OTHER:
+  0. Exit
+
+Enter choice: , was created. This script provides a command-line interface with functions to perform common database operations: , , , and . It is configured to connect to the database using the credentials from the  file.
+
+The final action was presenting these tools to the user, empowering them to directly view and edit the database content as requested.
 </current_work>
 
 <optional_next_step>
-Continue fixing the chat screen keyboard issue by adding the necessary styles to the newly refactored  in  to finalize the smooth slide-up behavior.
+I will wait for the user to confirm if they can successfully access and manipulate the database using the provided  and the  script.
 </optional_next_step>
