@@ -40,7 +40,7 @@ def show_users():
     
     for user in users:
         print(f"\n  Username: {user['username']}")
-        print(f  "  Email: {user['email']}")
+        print(f"  Email: {user['email']}")
         print(f"  Role: {user['role']}")
         print(f"  Active: {user.get('is_active', True)}")
         if 'supervisor_id' in user:
