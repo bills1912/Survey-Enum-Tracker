@@ -232,7 +232,8 @@ class Wilkerstat(BaseModel):
 class WilkerstatUpdate(BaseModel):
     name: Optional[str] = None
     # alias="filterField" memungkinkan frontend mengirim JSON key "filterField"
-    filter_field: Optional[str] = Field(None, alias="filterField") 
+    filterField: Optional[str] = None
+    filter_field: Optional[str] = None 
 
     class Config:
         allow_population_by_field_name = True
@@ -571,9 +572,10 @@ async def update_wilkerstat(
     
     if update_data.name:
         update_query["name"] = update_data.name
-        
+
+    incoming_filter = update_data.filterField or update_data.filter_field
     if update_data.filter_field:
-        update_query["filter_field"] = update_data.filter_field
+        update_query["filter_field"] = incoming_filter
 
     # Jika tidak ada data yang valid untuk diupdate
     if not update_query:
