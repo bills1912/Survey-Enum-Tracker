@@ -117,6 +117,7 @@ class Survey(BaseModel):
     is_active: bool = True
     geojson_path: Optional[str] = None
     geojson_filter_field: Optional[str] = None
+    geojson_filter_field: Optional[str] = None
 
 class SurveyCreate(BaseModel):
     title: str
@@ -147,7 +148,7 @@ class Respondent(BaseModel):
     survey_data: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    regionCode: str
+    region_code: str
 
 class RespondentCreate(BaseModel):
     name: str
@@ -156,7 +157,7 @@ class RespondentCreate(BaseModel):
     location: RespondentLocation
     survey_id: str
     enumerator_id: Optional[str] = None
-    regionCode: str
+    region_code: str
 
 class RespondentUpdate(BaseModel):
     status: Optional[str] = None
