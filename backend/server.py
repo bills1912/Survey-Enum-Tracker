@@ -229,6 +229,14 @@ class Wilkerstat(BaseModel):
     filter_field: str
     uploadedAt: datetime = Field(default_factory=datetime.utcnow)
 
+class WilkerstatUpdate(BaseModel):
+    name: Optional[str] = None
+    # alias="filterField" memungkinkan frontend mengirim JSON key "filterField"
+    filter_field: Optional[str] = Field(None, alias="filterField") 
+
+    class Config:
+        allow_population_by_field_name = True
+
 # Helper functions
 def get_password_hash(password: str):
     return pwd_context.hash(password)
@@ -538,6 +546,44 @@ async def get_wilkerstat_geojson(wilkerstat_id: str, current_user: dict = Depend
         raise HTTPException(status_code=404, detail="Wilkerstat not found")
     
     return wilkerstat.get("geojson", {})
+
+@api_router.put("/wilkerstats/{wilkerstat_id}")
+async def update_wilkerstat(
+    wilkerstat_id: str, 
+    update_data: WilkerstatUpdate, 
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update metadata Wilkerstat (Nama dan Filter Field).
+    GeoJSON tidak ikut diupdate di sini untuk efisiensi.
+    """
+    # 1. Cek Permission (Hanya Admin/Supervisor)
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # 2. Bersihkan data (hapus field yang None)
+    # menggunakan by_alias=False agar key kembali menjadi snake_case (filter_field) untuk database
+    data_dict = {k: v for k, v in update_data.dict(by_alias=False).items() if v is not None}
+
+    if not data_dict:
+        raise HTTPException(status_code=400, detail="No data provided for update")
+
+    # 3. Lakukan Update di MongoDB
+    result = await db.wilkerstats.update_one(
+        {"_id": ObjectId(wilkerstat_id)},
+        {"$set": data_dict}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Wilkerstat not found")
+
+    # 4. Ambil data terbaru untuk dikembalikan (tanpa geojson agar ringan)
+    updated_wilkerstat = await db.wilkerstats.find_one(
+        {"_id": ObjectId(wilkerstat_id)}, 
+        {"geojson": 0} # Exclude geojson data
+    )
+
+    return serialize_doc(updated_wilkerstat)
 
 @api_router.delete("/wilkerstats/{wilkerstat_id}")
 async def delete_wilkerstat(wilkerstat_id: str, current_user: dict = Depends(get_current_user)):
