@@ -555,35 +555,54 @@ async def update_wilkerstat(
 ):
     """
     Update metadata Wilkerstat (Nama dan Filter Field).
-    GeoJSON tidak ikut diupdate di sini untuk efisiensi.
     """
-    # 1. Cek Permission (Hanya Admin/Supervisor)
+    # 1. Cek Permission
     if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
         raise HTTPException(status_code=403, detail="Permission denied")
 
-    # 2. Bersihkan data (hapus field yang None)
-    # menggunakan by_alias=False agar key kembali menjadi snake_case (filter_field) untuk database
-    data_dict = {k: v for k, v in update_data.dict(by_alias=False).items() if v is not None}
+    # 2. Debugging: Print data yang diterima server di terminal
+    print(f"DEBUG: Menerima update untuk ID {wilkerstat_id}")
+    print(f"DEBUG: Data Raw: {update_data}")
 
-    if not data_dict:
-        raise HTTPException(status_code=400, detail="No data provided for update")
+    # 3. Manual Mapping (Cara Paling Aman)
+    # Kita susun manual dictionary untuk MongoDB agar key-nya pasti benar ("filter_field")
+    # dan tidak tergantungan pada setting alias Pydantic.
+    update_query = {}
+    
+    if update_data.name:
+        update_query["name"] = update_data.name
+        
+    if update_data.filter_field:
+        update_query["filter_field"] = update_data.filter_field
 
-    # 3. Lakukan Update di MongoDB
-    result = await db.wilkerstats.update_one(
-        {"_id": ObjectId(wilkerstat_id)},
-        {"$set": data_dict}
-    )
+    # Jika tidak ada data yang valid untuk diupdate
+    if not update_query:
+        raise HTTPException(status_code=400, detail="No valid data provided for update")
 
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Wilkerstat not found")
+    print(f"DEBUG: Query MongoDB: {update_query}")
 
-    # 4. Ambil data terbaru untuk dikembalikan (tanpa geojson agar ringan)
-    updated_wilkerstat = await db.wilkerstats.find_one(
-        {"_id": ObjectId(wilkerstat_id)}, 
-        {"geojson": 0} # Exclude geojson data
-    )
+    # 4. Eksekusi Update
+    try:
+        result = await db.wilkerstats.update_one(
+            {"_id": ObjectId(wilkerstat_id)},
+            {"$set": update_query}
+        )
+        
+        # Cek apakah ID ditemukan
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Wilkerstat not found")
 
-    return serialize_doc(updated_wilkerstat)
+        # 5. Ambil data terbaru (tanpa geojson agar respon cepat)
+        updated_wilkerstat = await db.wilkerstats.find_one(
+            {"_id": ObjectId(wilkerstat_id)}, 
+            {"geojson": 0} 
+        )
+
+        return serialize_doc(updated_wilkerstat)
+        
+    except Exception as e:
+        print(f"ERROR Update: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @api_router.delete("/wilkerstats/{wilkerstat_id}")
 async def delete_wilkerstat(wilkerstat_id: str, current_user: dict = Depends(get_current_user)):
