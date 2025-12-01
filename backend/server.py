@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Request, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Request, Query, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
@@ -221,6 +221,12 @@ class DashboardStats(BaseModel):
     completed: int
     active_enumerators: int
     total_enumerators: int
+
+class Wilkerstat(BaseModel):
+    id: Optional[str] = None
+    name: str
+    filterField: str
+    uploadedAt: datetime = Field(default_factory=datetime.utcnow)
 
 # Helper functions
 def get_password_hash(password: str):
@@ -459,6 +465,91 @@ async def get_survey_stats(survey_id: str, current_user: dict = Depends(get_curr
         "completed": completed,
         "completion_rate": round((completed / total * 100) if total > 0 else 0, 2)
     }
+
+@api_router.post("/wilkerstats/upload")
+async def upload_wilkerstat(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    filterField: str = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload GeoJSON file dan simpan ke database.
+    Hanya Admin dan Supervisor yang boleh upload.
+    """
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    # Validasi ekstensi file
+    if not file.filename.endswith(('.json', '.geojson')):
+        raise HTTPException(status_code=400, detail="Invalid file type. Must be JSON or GeoJSON.")
+
+    try:
+        # Baca isi file
+        content = await file.read()
+        geojson_data = json.loads(content.decode("utf-8"))
+
+        # Validasi dasar GeoJSON
+        if geojson_data.get("type") != "FeatureCollection" or not geojson_data.get("features"):
+             raise HTTPException(status_code=400, detail="Invalid GeoJSON format")
+
+        # Siapkan dokumen untuk disimpan
+        wilkerstat_doc = {
+            "name": name,
+            "filterField": filterField,
+            "uploadedAt": datetime.utcnow(),
+            "uploadedBy": current_user["id"],
+            "geojson": geojson_data  # Simpan seluruh data peta di sini
+        }
+
+        result = await db.wilkerstats.insert_one(wilkerstat_doc)
+        
+        return {
+            "success": True, 
+            "id": str(result.inserted_id), 
+            "message": "Wilkerstat uploaded successfully"
+        }
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file content")
+    except Exception as e:
+        logging.error(f"Error uploading wilkerstat: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+@api_router.get("/wilkerstats", response_model=List[Wilkerstat])
+async def get_wilkerstats(current_user: dict = Depends(get_current_user)):
+    """
+    Ambil daftar Wilkerstat.
+    PENTING: Kita menggunakan projection {"geojson": 0} agar tidak meload 
+    data peta yang besar saat hanya menampilkan daftar tabel.
+    """
+    wilkerstats = await db.wilkerstats.find({}, {"geojson": 0}).sort("uploadedAt", -1).to_list(1000)
+    return [serialize_doc(w) for w in wilkerstats]
+
+@api_router.get("/wilkerstats/{wilkerstat_id}/geojson")
+async def get_wilkerstat_geojson(wilkerstat_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Endpoint khusus untuk mengambil data map (GeoJSON) secara penuh
+    Digunakan saat peta akan dirender di frontend.
+    """
+    wilkerstat = await db.wilkerstats.find_one({"_id": ObjectId(wilkerstat_id)})
+    if not wilkerstat:
+        raise HTTPException(status_code=404, detail="Wilkerstat not found")
+    
+    return wilkerstat.get("geojson", {})
+
+@api_router.delete("/wilkerstats/{wilkerstat_id}")
+async def delete_wilkerstat(wilkerstat_id: str, current_user: dict = Depends(get_current_user)):
+    """Hapus data wilkerstat"""
+    if current_user["role"] not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    result = await db.wilkerstats.delete_one({"_id": ObjectId(wilkerstat_id)})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Wilkerstat not found")
+        
+    return {"success": True, "message": "Wilkerstat deleted"}
 
 # Bulk upload and assignment endpoints
 class BulkUserData(BaseModel):
