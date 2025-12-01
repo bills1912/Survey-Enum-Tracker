@@ -225,7 +225,7 @@ class DashboardStats(BaseModel):
 class Wilkerstat(BaseModel):
     id: Optional[str] = None
     name: str
-    filterField: str
+    filter_field: str
     uploadedAt: datetime = Field(default_factory=datetime.utcnow)
 
 # Helper functions
@@ -470,7 +470,7 @@ async def get_survey_stats(survey_id: str, current_user: dict = Depends(get_curr
 async def upload_wilkerstat(
     file: UploadFile = File(...),
     name: str = Form(...),
-    filterField: str = Form(...),
+    filter_field: str = Form(...),
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -496,7 +496,7 @@ async def upload_wilkerstat(
         # Siapkan dokumen untuk disimpan
         wilkerstat_doc = {
             "name": name,
-            "filterField": filterField,
+            "filter_field": filter_field,
             "uploadedAt": datetime.utcnow(),
             "uploadedBy": current_user["id"],
             "geojson": geojson_data  # Simpan seluruh data peta di sini
