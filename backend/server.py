@@ -70,6 +70,18 @@ class UserRole:
     SUPERVISOR = "supervisor"
     ENUMERATOR = "enumerator"
 
+class DeviceInfo(BaseModel):
+    device_model: Optional[str] = None
+    os_version: Optional[str] = None
+    app_version: Optional[str] = None
+    device_id: Optional[str] = None
+    is_device_rooted: bool = False
+    is_emulator: bool = False
+    is_mock_location_enabled: bool = False
+    
+    class Config:
+        extra = "ignore" # Mengabaikan field tambahan jika ada perbedaan versi
+
 class User(BaseModel):
     id: Optional[str] = None
     username: str
@@ -91,6 +103,7 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+    device_info: Optional[DeviceInfo] = None
 
 class Token(BaseModel):
     access_token: str
@@ -331,6 +344,30 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     user_id = str(user["_id"])
+
+    if credentials.device_info:
+        update_data = {
+            "last_login_at": datetime.utcnow(),
+            "last_device_info": credentials.device_info.dict(),
+            "device_history": { # Opsional: Jika ingin menyimpan histori login
+                "$push": {
+                    "device_model": credentials.device_info.device_model,
+                    "login_at": datetime.utcnow(),
+                    "is_rooted": credentials.device_info.is_device_rooted
+                }
+            }
+        }
+        
+        # Hapus operator $push dari update_data utama agar bisa diproses terpisah jika perlu
+        # Untuk simplifikasi, kita update field last_device_info saja dulu
+        await db.users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {
+                "last_login_at": datetime.utcnow(),
+                "last_device_info": credentials.device_info.dict()
+            }}
+        )
+    
     access_token = create_access_token(data={"sub": user_id})
     
     user["id"] = user_id
