@@ -16,6 +16,7 @@ from passlib.context import CryptContext
 import google.generativeai as genai
 from bson import ObjectId
 import json
+import uuid
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -270,12 +271,21 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
+        token_id: str = payload.get("jti") # Ambil ID dari token user
+        
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
         
         user = await db.users.find_one({"_id": ObjectId(user_id)})
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
+
+        current_db_token = user.get("current_token_id")
+        if current_db_token and token_id != current_db_token:
+             raise HTTPException(
+                 status_code=401, 
+                 detail="Session expired. You have logged in on another device."
+             )
         
         user["id"] = str(user["_id"])
         del user["_id"]
@@ -339,37 +349,33 @@ async def register(user_data: UserCreate):
 
 @api_router.post("/auth/login", response_model=Token)
 async def login(credentials: UserLogin):
+    # 1. Cek User & Password
     user = await db.users.find_one({"email": credentials.email})
     if not user or not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     user_id = str(user["_id"])
+    new_token_id = str(uuid.uuid4())
+
+    fields_to_set = {
+        "last_login_at": datetime.utcnow(),
+        "current_token_id": new_token_id 
+    }
 
     if credentials.device_info:
-        update_data = {
-            "last_login_at": datetime.utcnow(),
-            "last_device_info": credentials.device_info.dict(),
-            "device_history": { # Opsional: Jika ingin menyimpan histori login
-                "$push": {
-                    "device_model": credentials.device_info.device_model,
-                    "login_at": datetime.utcnow(),
-                    "is_rooted": credentials.device_info.is_device_rooted
-                }
-            }
-        }
+        fields_to_set["last_device_info"] = credentials.device_info.dict()
         
-        # Hapus operator $push dari update_data utama agar bisa diproses terpisah jika perlu
-        # Untuk simplifikasi, kita update field last_device_info saja dulu
-        await db.users.update_one(
-            {"_id": user["_id"]},
-            {"$set": {
-                "last_login_at": datetime.utcnow(),
-                "last_device_info": credentials.device_info.dict()
-            }}
-        )
+    await db.users.update_one(
+        {"_id": user["_id"]},
+        {"$set": fields_to_set}
+    )
     
-    access_token = create_access_token(data={"sub": user_id})
+    access_token = create_access_token(data={
+        "sub": user_id, 
+        "jti": new_token_id 
+    })
     
+    # 7. Bersihkan objek user sebelum dikembalikan
     user["id"] = user_id
     del user["_id"]
     del user["password"]
