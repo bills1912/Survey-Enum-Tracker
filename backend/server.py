@@ -381,6 +381,10 @@ async def login(credentials: UserLogin):
     }
 
 @api_router.get("/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return current_user
+
+@api_router.post("/auth/device-sync")
 async def sync_device_info(
     device_info: DeviceInfo,
     current_user: dict = Depends(get_current_user)
