@@ -381,8 +381,26 @@ async def login(credentials: UserLogin):
     }
 
 @api_router.get("/auth/me")
-async def get_me(current_user: dict = Depends(get_current_user)):
-    return current_user
+async def sync_device_info(
+    device_info: DeviceInfo,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Endpoint khusus untuk Auto-login.
+    Memperbarui data device tanpa perlu login ulang (hanya butuh Token).
+    """
+    await db.users.update_one(
+        {"_id": ObjectId(current_user["id"])},
+        {"$set": {
+            "last_active_at": datetime.utcnow(), # Menandakan user aktif sekarang
+            "last_device_info": device_info.dict()
+        }}
+    )
+    
+    # Opsional: Log history jika perlu
+    # await db.users.update_one(...)
+    
+    return {"status": "synced", "device": device_info.device_model}
 
 # User routes
 @api_router.get("/users")
