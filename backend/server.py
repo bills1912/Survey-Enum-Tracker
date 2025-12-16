@@ -90,6 +90,7 @@ class User(BaseModel):
     password: Optional[str] = None
     role: str
     supervisor_id: Optional[str] = None
+    assigned_surveys: List[str] = []
     team_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -100,6 +101,7 @@ class UserCreate(BaseModel):
     role: str
     supervisor_id: Optional[str] = None
     team_id: Optional[str] = None
+    assigned_surveys: Optional[List[str]] = []
 
 class UserLogin(BaseModel):
     email: str
@@ -441,6 +443,49 @@ async def get_enumerators(current_user: dict = Depends(get_current_user)):
     
     enumerators = await db.users.find(query).to_list(1000)
     return [serialize_doc(user) for user in enumerators]
+
+@api_router.post("/users", response_model=dict)
+async def create_user_admin(
+    user_data: UserCreate, 
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create New User (Admin Only).
+    Endpoint ini digunakan oleh Admin Dashboard untuk menambah user baru.
+    """
+    # 1. Cek Permission (Hanya Admin yang boleh membuat user)
+    # Catatan: 'admin' adalah role untuk Super Admin di sistem ini
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Permission denied. Only Super Admin can create users.")
+
+    # 2. Cek apakah email sudah terdaftar
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # 3. Hash Password
+    hashed_password = get_password_hash(user_data.password)
+
+    # 4. Siapkan dokumen user
+    user_dict = user_data.dict()
+    user_dict["password"] = hashed_password
+    user_dict["created_at"] = datetime.utcnow()
+    
+    # Pastikan assigned_surveys ada (default list kosong jika None)
+    if "assigned_surveys" not in user_dict or user_dict["assigned_surveys"] is None:
+        user_dict["assigned_surveys"] = []
+
+    # 5. Simpan ke Database
+    result = await db.users.insert_one(user_dict)
+    
+    # 6. Kembalikan data user (tanpa password)
+    user_dict["id"] = str(result.inserted_id)
+    del user_dict["password"]
+    
+    # Pastikan _id dihapus sebelum return agar tidak error Pydantic
+    if "_id" in user_dict: del user_dict["_id"]
+
+    return user_dict
 
 @api_router.put("/users/{user_id}")
 async def update_user(
