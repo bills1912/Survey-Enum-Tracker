@@ -106,6 +106,14 @@ class UserLogin(BaseModel):
     password: str
     device_info: Optional[DeviceInfo] = None
 
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+    supervisor_id: Optional[str] = None
+    assigned_surveys: Optional[List[str]] = None
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -433,6 +441,79 @@ async def get_enumerators(current_user: dict = Depends(get_current_user)):
     
     enumerators = await db.users.find(query).to_list(1000)
     return [serialize_doc(user) for user in enumerators]
+
+@api_router.put("/users/{user_id}")
+async def update_user(
+    user_id: str, 
+    user_data: UserUpdate, 
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Endpoint untuk mengupdate data user (Edit User).
+    Hanya Admin yang boleh mengubah Role atau Assigned Surveys.
+    User biasa hanya boleh mengubah profil dasar mereka sendiri (tergantung kebijakan).
+    """
+    
+    # 1. Cek Permission
+    # Admin boleh edit siapa saja.
+    # User biasa hanya boleh edit diri sendiri.
+    if current_user["role"] != UserRole.ADMIN and current_user["id"] != user_id:
+        # Tambahan: Supervisor boleh edit enumerator bawahan mereka (opsional)
+        target_user_check = await db.users.find_one({"_id": ObjectId(user_id)})
+        is_subordinate = (
+            current_user["role"] == UserRole.SUPERVISOR and 
+            target_user_check and 
+            target_user_check.get("supervisor_id") == current_user["id"]
+        )
+        
+        if not is_subordinate:
+            raise HTTPException(status_code=403, detail="Permission denied")
+
+    # 2. Siapkan data yang akan diupdate
+    update_dict = user_data.dict(exclude_unset=True)
+
+    # 3. Handle Password Hashing (jika password diubah)
+    if "password" in update_dict:
+        if update_dict["password"] and update_dict["password"].strip() != "":
+            update_dict["password"] = get_password_hash(update_dict["password"])
+        else:
+            # Jika password dikirim kosong/null, jangan diupdate
+            del update_dict["password"]
+
+    # 4. Validasi Role (Regular user tidak boleh jadi Admin sendiri via API)
+    if "role" in update_dict and current_user["role"] != UserRole.ADMIN:
+        # Cegah privilege escalation
+        del update_dict["role"]
+
+    # Tambahkan timestamp update
+    update_dict["updated_at"] = datetime.utcnow()
+
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="No data provided for update")
+
+    try:
+        # 5. Eksekusi Update di MongoDB
+        result = await db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": update_dict}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # 6. Kembalikan data user terbaru
+        updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
+        serialized = serialize_doc(updated_user)
+        
+        # Hapus password hash dari response
+        if "password" in serialized:
+            del serialized["password"]
+            
+        return serialized
+
+    except Exception as e:
+        logger.error(f"Error updating user: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # Survey routes
 @api_router.post("/surveys", response_model=Survey)
