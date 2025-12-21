@@ -216,6 +216,7 @@ class LocationTrackingBatch(BaseModel):
 class MessageType:
     AI = "ai"
     SUPERVISOR = "supervisor"
+    BROADCAST = "broadcast"
 
 class Message(BaseModel):
     id: Optional[str] = None
