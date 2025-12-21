@@ -63,6 +63,12 @@ class ConnectionManager:
         for connection in self.active_connections.values():
             await connection.send_json(message)
 
+    async def broadcast_to_users(self, message: dict, user_ids: List[str]):
+        """Broadcast message to specific users only"""
+        for user_id in user_ids:
+            if user_id in self.active_connections:
+                await self.active_connections[user_id].send_json(message)
+
 manager = ConnectionManager()
 
 # Models
@@ -141,7 +147,6 @@ class Survey(BaseModel):
     is_active: bool = True
     geojson_path: Optional[str] = None
     geojson_filter_field: Optional[str] = None
-    geojson_filter_field: Optional[str] = None
 
 class SurveyCreate(BaseModel):
     title: str
@@ -189,7 +194,6 @@ class RespondentUpdate(BaseModel):
     enumerator_id: Optional[str] = None
     
     class Config:
-        # Allow any status value without strict validation
         extra = "forbid"
 
 class LocationTracking(BaseModel):
@@ -223,14 +227,43 @@ class Message(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     is_synced: bool = True
     answered: bool = False
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
+    is_edited: bool = False
+    edited_at: Optional[datetime] = None
+    original_content: Optional[str] = None  # Store original content before edit
+    read_by: List[str] = []  # Track who has read the message
+    conversation_id: Optional[str] = None  # Group messages into conversations
 
 class MessageCreate(BaseModel):
     receiver_id: Optional[str] = None
     message_type: str
     content: str
+    conversation_id: Optional[str] = None
+
+class MessageUpdate(BaseModel):
+    content: str
+
+class MessageResponse(BaseModel):
+    response: str
 
 class MessageBatch(BaseModel):
     messages: List[Dict[str, Any]]
+
+# NEW: Broadcast Message Model
+class BroadcastMessageCreate(BaseModel):
+    content: str
+    target_roles: List[str] = ["enumerator", "supervisor"]  # Who receives the broadcast
+    survey_id: Optional[str] = None  # Optional: target specific survey participants
+
+# NEW: Conversation Model (for grouping messages between users)
+class Conversation(BaseModel):
+    id: Optional[str] = None
+    participants: List[str]  # User IDs involved in the conversation
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    last_message: Optional[str] = None
+    unread_count: Dict[str, int] = {}  # Track unread count per user
 
 class FAQItem(BaseModel):
     id: Optional[str] = None
@@ -1024,20 +1057,55 @@ async def get_latest_locations(current_user: dict = Depends(get_current_user)):
     result = await db.locations.aggregate(pipeline).to_list(1000)
     locations = [serialize_doc(item["latest_location"]) for item in result]
     return locations
-
+    
 # Message/Chat routes
 @api_router.post("/messages")
 async def create_message(message: MessageCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new message (supports AI chat, supervisor chat)"""
     message_dict = message.dict()
     message_dict["sender_id"] = current_user["id"]
     message_dict["timestamp"] = datetime.utcnow()
     message_dict["is_synced"] = True
     message_dict["answered"] = False
+    message_dict["is_deleted"] = False
+    message_dict["is_edited"] = False
+    message_dict["read_by"] = [current_user["id"]]  # Sender has read it
+    
+    # For supervisor messages, find or create conversation
+    if message.message_type == MessageType.SUPERVISOR:
+        # Find supervisor for this enumerator
+        if current_user["role"] == UserRole.ENUMERATOR:
+            supervisor_id = current_user.get("supervisor_id")
+            if supervisor_id:
+                message_dict["receiver_id"] = supervisor_id
+                
+                # Create or get conversation
+                conversation = await db.conversations.find_one({
+                    "participants": {"$all": [current_user["id"], supervisor_id]}
+                })
+                
+                if not conversation:
+                    conv_result = await db.conversations.insert_one({
+                        "participants": [current_user["id"], supervisor_id],
+                        "created_at": datetime.utcnow(),
+                        "updated_at": datetime.utcnow(),
+                        "unread_count": {supervisor_id: 1}
+                    })
+                    message_dict["conversation_id"] = str(conv_result.inserted_id)
+                else:
+                    message_dict["conversation_id"] = str(conversation["_id"])
+                    # Update unread count for supervisor
+                    await db.conversations.update_one(
+                        {"_id": conversation["_id"]},
+                        {
+                            "$inc": {f"unread_count.{supervisor_id}": 1},
+                            "$set": {"updated_at": datetime.utcnow()}
+                        }
+                    )
     
     # If it's an AI message, get response from Gemini
     if message.message_type == MessageType.AI and GEMINI_API_KEY:
         try:
-            # Context for field data collection
             context = """You are an AI assistant helping field enumerators with data collection issues.
 Only answer questions related to:
 - Field data collection procedures
@@ -1059,36 +1127,25 @@ If the question is not related to field data collection, politely decline to ans
     result = await db.messages.insert_one(message_dict)
     message_dict["_id"] = result.inserted_id
     
-    # Serialize the document to convert ObjectId to string
     serialized_message = serialize_doc(message_dict)
     
     # Notify receiver if supervisor message
-    if message.message_type == MessageType.SUPERVISOR and message.receiver_id:
+    if message.message_type == MessageType.SUPERVISOR and message_dict.get("receiver_id"):
         await manager.send_personal_message({
             "type": "new_message",
             "data": serialized_message
-        }, message.receiver_id)
+        }, message_dict["receiver_id"])
     
     return serialized_message
 
-@api_router.post("/messages/batch")
-async def create_messages_batch(batch: MessageBatch, current_user: dict = Depends(get_current_user)):
-    messages = []
-    for msg in batch.messages:
-        msg["timestamp"] = datetime.fromisoformat(msg["timestamp"]) if isinstance(msg.get("timestamp"), str) else msg.get("timestamp", datetime.utcnow())
-        msg["is_synced"] = True
-        messages.append(msg)
-    
-    if messages:
-        result = await db.messages.insert_many(messages)
-        for i, inserted_id in enumerate(result.inserted_ids):
-            messages[i]["id"] = str(inserted_id)
-    
-    return {"success": True, "count": len(messages)}
-
 @api_router.get("/messages")
-async def get_messages(message_type: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+async def get_messages(
+    message_type: Optional[str] = None, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Get messages for current user (enumerator only sees their own messages)"""
     query = {
+        "is_deleted": {"$ne": True},
         "$or": [
             {"sender_id": current_user["id"]},
             {"receiver_id": current_user["id"]}
@@ -1101,19 +1158,177 @@ async def get_messages(message_type: Optional[str] = None, current_user: dict = 
     messages = await db.messages.find(query).sort("timestamp", -1).to_list(1000)
     return [serialize_doc(msg) for msg in messages]
 
-@api_router.put("/messages/{message_id}/respond")
-async def respond_to_message(message_id: str, response: Dict[str, str], current_user: dict = Depends(get_current_user)):
-    """Supervisor responds to enumerator message"""
+@api_router.get("/messages/history")
+async def get_message_history(
+    conversation_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    message_type: Optional[str] = None,
+    limit: int = Query(default=50, le=200),
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get message history with pagination
+    - Enumerator: Only their own messages
+    - Supervisor: Messages from their enumerators
+    - Admin: All messages
+    """
+    query = {"is_deleted": {"$ne": True}}
+    
+    if current_user["role"] == UserRole.ENUMERATOR:
+        # Enumerator only sees their own messages
+        query["$or"] = [
+            {"sender_id": current_user["id"]},
+            {"receiver_id": current_user["id"]}
+        ]
+    elif current_user["role"] == UserRole.SUPERVISOR:
+        # Supervisor sees messages from their enumerators
+        enumerators = await db.users.find({"supervisor_id": current_user["id"]}).to_list(1000)
+        enumerator_ids = [str(e["_id"]) for e in enumerators]
+        enumerator_ids.append(current_user["id"])  # Include supervisor's own messages
+        
+        if user_id and user_id in enumerator_ids:
+            # Filter by specific enumerator
+            query["$or"] = [
+                {"sender_id": user_id},
+                {"receiver_id": user_id}
+            ]
+        else:
+            query["$or"] = [
+                {"sender_id": {"$in": enumerator_ids}},
+                {"receiver_id": {"$in": enumerator_ids}}
+            ]
+    # Admin sees all messages (no additional filter)
+    
+    if conversation_id:
+        query["conversation_id"] = conversation_id
+    
+    if message_type:
+        query["message_type"] = message_type
+    
+    total = await db.messages.count_documents(query)
+    messages = await db.messages.find(query).sort("timestamp", -1).skip(offset).limit(limit).to_list(limit)
+    
+    return {
+        "messages": [serialize_doc(msg) for msg in messages],
+        "total": total,
+        "limit": limit,
+        "offset": offset
+    }
+
+@api_router.put("/messages/{message_id}")
+async def update_message(
+    message_id: str, 
+    update_data: MessageUpdate, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Edit a message (only by sender, within time limit)"""
+    message = await db.messages.find_one({"_id": ObjectId(message_id)})
+    
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Only sender can edit
+    if message["sender_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="You can only edit your own messages")
+    
+    # Check time limit (e.g., 15 minutes)
+    time_diff = datetime.utcnow() - message["timestamp"]
+    if time_diff > timedelta(minutes=15):
+        raise HTTPException(status_code=400, detail="Message can only be edited within 15 minutes of sending")
+    
+    # Store original content if first edit
+    original_content = message.get("original_content") or message["content"]
+    
     result = await db.messages.update_one(
         {"_id": ObjectId(message_id)},
-        {"$set": {"response": response["response"], "answered": True}}
+        {"$set": {
+            "content": update_data.content,
+            "is_edited": True,
+            "edited_at": datetime.utcnow(),
+            "original_content": original_content
+        }}
     )
     
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Message not found")
     
+    updated_message = await db.messages.find_one({"_id": ObjectId(message_id)})
+    serialized = serialize_doc(updated_message)
+    
+    # Notify receiver about edit
+    if message.get("receiver_id"):
+        await manager.send_personal_message({
+            "type": "message_edited",
+            "data": serialized
+        }, message["receiver_id"])
+    
+    return serialized
+
+@api_router.delete("/messages/{message_id}")
+async def delete_message(message_id: str, current_user: dict = Depends(get_current_user)):
+    """Soft delete a message (only by sender or admin)"""
     message = await db.messages.find_one({"_id": ObjectId(message_id)})
-    msg_data = serialize_doc(message)
+    
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Only sender or admin can delete
+    if message["sender_id"] != current_user["id"] and current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="You can only delete your own messages")
+    
+    result = await db.messages.update_one(
+        {"_id": ObjectId(message_id)},
+        {"$set": {
+            "is_deleted": True,
+            "deleted_at": datetime.utcnow()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Notify receiver about deletion
+    if message.get("receiver_id"):
+        await manager.send_personal_message({
+            "type": "message_deleted",
+            "data": {"message_id": message_id}
+        }, message["receiver_id"])
+    
+    return {"success": True, "message": "Message deleted"}
+
+@api_router.put("/messages/{message_id}/respond")
+async def respond_to_message(
+    message_id: str, 
+    response: MessageResponse, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Supervisor responds to enumerator message"""
+    message = await db.messages.find_one({"_id": ObjectId(message_id)})
+    
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Only supervisor/admin can respond to supervisor messages
+    if message["message_type"] == MessageType.SUPERVISOR:
+        if current_user["role"] not in [UserRole.SUPERVISOR, UserRole.ADMIN]:
+            raise HTTPException(status_code=403, detail="Only supervisors can respond to these messages")
+    
+    result = await db.messages.update_one(
+        {"_id": ObjectId(message_id)},
+        {"$set": {
+            "response": response.response,
+            "answered": True,
+            "answered_by": current_user["id"],
+            "answered_at": datetime.utcnow()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    updated_message = await db.messages.find_one({"_id": ObjectId(message_id)})
+    msg_data = serialize_doc(updated_message)
     
     # Notify sender
     await manager.send_personal_message({
@@ -1122,6 +1337,329 @@ async def respond_to_message(message_id: str, response: Dict[str, str], current_
     }, msg_data["sender_id"])
     
     return msg_data
+
+@api_router.put("/messages/{message_id}/read")
+async def mark_message_read(message_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a message as read"""
+    result = await db.messages.update_one(
+        {"_id": ObjectId(message_id)},
+        {"$addToSet": {"read_by": current_user["id"]}}
+    )
+    
+    # Update conversation unread count
+    message = await db.messages.find_one({"_id": ObjectId(message_id)})
+    if message and message.get("conversation_id"):
+        await db.conversations.update_one(
+            {"_id": ObjectId(message["conversation_id"])},
+            {"$set": {f"unread_count.{current_user['id']}": 0}}
+        )
+    
+    return {"success": True}
+
+@api_router.get("/supervisor/conversations")
+async def get_supervisor_conversations(current_user: dict = Depends(get_current_user)):
+    """Get all conversations for supervisor with their enumerators"""
+    if current_user["role"] not in [UserRole.SUPERVISOR, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Get enumerators under this supervisor
+    if current_user["role"] == UserRole.SUPERVISOR:
+        enumerators = await db.users.find({"supervisor_id": current_user["id"]}).to_list(1000)
+    else:
+        # Admin sees all enumerators
+        enumerators = await db.users.find({"role": UserRole.ENUMERATOR}).to_list(1000)
+    
+    conversations = []
+    for enum in enumerators:
+        enum_id = str(enum["_id"])
+        
+        # Get latest message
+        latest_message = await db.messages.find_one(
+            {
+                "message_type": MessageType.SUPERVISOR,
+                "is_deleted": {"$ne": True},
+                "$or": [
+                    {"sender_id": enum_id},
+                    {"receiver_id": enum_id}
+                ]
+            },
+            sort=[("timestamp", -1)]
+        )
+        
+        # Count unread messages
+        unread_count = await db.messages.count_documents({
+            "sender_id": enum_id,
+            "message_type": MessageType.SUPERVISOR,
+            "answered": False,
+            "is_deleted": {"$ne": True}
+        })
+        
+        # Count unanswered messages
+        unanswered_count = await db.messages.count_documents({
+            "sender_id": enum_id,
+            "message_type": MessageType.SUPERVISOR,
+            "answered": False,
+            "is_deleted": {"$ne": True}
+        })
+        
+        conversations.append({
+            "enumerator": serialize_doc(enum),
+            "latest_message": serialize_doc(latest_message) if latest_message else None,
+            "unread_count": unread_count,
+            "unanswered_count": unanswered_count
+        })
+    
+    # Sort by latest message timestamp
+    conversations.sort(
+        key=lambda x: x["latest_message"]["timestamp"] if x["latest_message"] else datetime.min,
+        reverse=True
+    )
+    
+    return conversations
+
+@api_router.get("/supervisor/messages/{enumerator_id}")
+async def get_enumerator_messages(
+    enumerator_id: str,
+    limit: int = Query(default=50, le=200),
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all messages from a specific enumerator (Supervisor/Admin only)"""
+    if current_user["role"] not in [UserRole.SUPERVISOR, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Verify enumerator belongs to this supervisor
+    if current_user["role"] == UserRole.SUPERVISOR:
+        enumerator = await db.users.find_one({
+            "_id": ObjectId(enumerator_id),
+            "supervisor_id": current_user["id"]
+        })
+        if not enumerator:
+            raise HTTPException(status_code=403, detail="This enumerator is not under your supervision")
+    
+    query = {
+        "message_type": MessageType.SUPERVISOR,
+        "is_deleted": {"$ne": True},
+        "$or": [
+            {"sender_id": enumerator_id},
+            {"receiver_id": enumerator_id}
+        ]
+    }
+    
+    total = await db.messages.count_documents(query)
+    messages = await db.messages.find(query).sort("timestamp", -1).skip(offset).limit(limit).to_list(limit)
+    
+    # Get enumerator info
+    enumerator = await db.users.find_one({"_id": ObjectId(enumerator_id)})
+    
+    return {
+        "enumerator": serialize_doc(enumerator),
+        "messages": [serialize_doc(msg) for msg in messages],
+        "total": total,
+        "limit": limit,
+        "offset": offset
+    }
+
+@api_router.get("/supervisor/unanswered")
+async def get_unanswered_messages(current_user: dict = Depends(get_current_user)):
+    """Get all unanswered messages from enumerators (Supervisor/Admin only)"""
+    if current_user["role"] not in [UserRole.SUPERVISOR, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    query = {
+        "message_type": MessageType.SUPERVISOR,
+        "answered": False,
+        "is_deleted": {"$ne": True}
+    }
+    
+    # Filter by supervisor's enumerators
+    if current_user["role"] == UserRole.SUPERVISOR:
+        enumerators = await db.users.find({"supervisor_id": current_user["id"]}).to_list(1000)
+        enumerator_ids = [str(e["_id"]) for e in enumerators]
+        query["sender_id"] = {"$in": enumerator_ids}
+    
+    messages = await db.messages.find(query).sort("timestamp", -1).to_list(1000)
+    
+    # Enrich with sender info
+    result = []
+    for msg in messages:
+        sender = await db.users.find_one({"_id": ObjectId(msg["sender_id"])})
+        msg_data = serialize_doc(msg)
+        msg_data["sender"] = serialize_doc(sender) if sender else None
+        result.append(msg_data)
+    
+    return result
+
+@api_router.get("/admin/all-messages")
+async def get_all_messages(
+    message_type: Optional[str] = None,
+    limit: int = Query(default=100, le=500),
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Get all messages without restrictions"""
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    query = {"is_deleted": {"$ne": True}}
+    
+    if message_type:
+        query["message_type"] = message_type
+    
+    total = await db.messages.count_documents(query)
+    messages = await db.messages.find(query).sort("timestamp", -1).skip(offset).limit(limit).to_list(limit)
+    
+    # Enrich with user info
+    result = []
+    for msg in messages:
+        msg_data = serialize_doc(msg)
+        
+        # Get sender info
+        sender = await db.users.find_one({"_id": ObjectId(msg["sender_id"])})
+        msg_data["sender"] = serialize_doc(sender) if sender else None
+        
+        # Get receiver info if exists
+        if msg.get("receiver_id"):
+            receiver = await db.users.find_one({"_id": ObjectId(msg["receiver_id"])})
+            msg_data["receiver"] = serialize_doc(receiver) if receiver else None
+        
+        result.append(msg_data)
+    
+    return {
+        "messages": result,
+        "total": total,
+        "limit": limit,
+        "offset": offset
+    }
+
+@api_router.get("/admin/chat-stats")
+async def get_chat_stats(current_user: dict = Depends(get_current_user)):
+    """Admin: Get chat statistics"""
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    total_messages = await db.messages.count_documents({"is_deleted": {"$ne": True}})
+    ai_messages = await db.messages.count_documents({
+        "message_type": MessageType.AI,
+        "is_deleted": {"$ne": True}
+    })
+    supervisor_messages = await db.messages.count_documents({
+        "message_type": MessageType.SUPERVISOR,
+        "is_deleted": {"$ne": True}
+    })
+    broadcast_messages = await db.messages.count_documents({
+        "message_type": MessageType.BROADCAST,
+        "is_deleted": {"$ne": True}
+    })
+    unanswered = await db.messages.count_documents({
+        "message_type": MessageType.SUPERVISOR,
+        "answered": False,
+        "is_deleted": {"$ne": True}
+    })
+    
+    # Messages per day (last 7 days)
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    pipeline = [
+        {"$match": {"timestamp": {"$gte": seven_days_ago}, "is_deleted": {"$ne": True}}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}},
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    daily_stats = await db.messages.aggregate(pipeline).to_list(7)
+    
+    return {
+        "total_messages": total_messages,
+        "ai_messages": ai_messages,
+        "supervisor_messages": supervisor_messages,
+        "broadcast_messages": broadcast_messages,
+        "unanswered_messages": unanswered,
+        "daily_stats": daily_stats
+    }
+
+@api_router.post("/admin/broadcast")
+async def create_broadcast_message(
+    broadcast: BroadcastMessageCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Send broadcast message to all users or specific roles/survey"""
+    if current_user["role"] != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    # Build target user query
+    user_query = {"role": {"$in": broadcast.target_roles}}
+    
+    if broadcast.survey_id:
+        # Get users assigned to this survey
+        survey = await db.surveys.find_one({"_id": ObjectId(broadcast.survey_id)})
+        if survey:
+            survey_user_ids = survey.get("supervisor_ids", []) + survey.get("enumerator_ids", [])
+            user_query["_id"] = {"$in": [ObjectId(uid) for uid in survey_user_ids]}
+    
+    target_users = await db.users.find(user_query).to_list(10000)
+    target_user_ids = [str(u["_id"]) for u in target_users]
+    
+    # Create broadcast message
+    message_dict = {
+        "sender_id": current_user["id"],
+        "receiver_id": None,  # Broadcast has no specific receiver
+        "message_type": MessageType.BROADCAST,
+        "content": broadcast.content,
+        "timestamp": datetime.utcnow(),
+        "is_synced": True,
+        "answered": True,  # Broadcasts don't need answering
+        "is_deleted": False,
+        "is_edited": False,
+        "read_by": [current_user["id"]],
+        "target_roles": broadcast.target_roles,
+        "target_survey_id": broadcast.survey_id,
+        "target_user_ids": target_user_ids
+    }
+    
+    result = await db.messages.insert_one(message_dict)
+    message_dict["_id"] = result.inserted_id
+    
+    serialized_message = serialize_doc(message_dict)
+    
+    # Send via WebSocket to all target users
+    await manager.broadcast_to_users({
+        "type": "broadcast_message",
+        "data": serialized_message
+    }, target_user_ids)
+    
+    return {
+        "success": True,
+        "message": serialized_message,
+        "recipients_count": len(target_user_ids)
+    }
+
+@api_router.get("/messages/broadcasts")
+async def get_broadcast_messages(
+    limit: int = Query(default=20, le=100),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get broadcast messages for current user"""
+    query = {
+        "message_type": MessageType.BROADCAST,
+        "is_deleted": {"$ne": True},
+        "$or": [
+            {"target_user_ids": current_user["id"]},
+            {"target_roles": current_user["role"]}
+        ]
+    }
+    
+    messages = await db.messages.find(query).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    # Enrich with sender info
+    result = []
+    for msg in messages:
+        msg_data = serialize_doc(msg)
+        sender = await db.users.find_one({"_id": ObjectId(msg["sender_id"])})
+        msg_data["sender"] = serialize_doc(sender) if sender else None
+        result.append(msg_data)
+    
+    return result
 
 # FAQ routes
 @api_router.get("/faqs")
