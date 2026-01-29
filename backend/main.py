@@ -13,8 +13,6 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
-from google import genai
-from google.genai import types
 from bson import ObjectId
 import json
 import uuid
@@ -33,11 +31,21 @@ security = HTTPBearer()
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 ALGORITHM = "HS256"
 
-# Gemini AI Configuration
+# Gemini AI Configuration with safe error handling
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+gemini_model = None
+
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-pro')
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        logging.info("✅ Gemini AI initialized successfully")
+    except Exception as e:
+        logging.warning(f"⚠️  Gemini AI initialization failed: {e}")
+        gemini_model = None
+else:
+    logging.info("ℹ️  GEMINI_API_KEY not set. AI chat will be disabled.")
 
 # Create the main app
 app = FastAPI()
@@ -1106,7 +1114,7 @@ async def create_message(message: MessageCreate, current_user: dict = Depends(ge
                     )
     
     # If it's an AI message, get response from Gemini
-    if message.message_type == MessageType.AI and GEMINI_API_KEY:
+    if message.message_type == MessageType.AI and gemini_model:
         try:
             context = """You are an AI assistant helping field enumerators with data collection issues.
 Only answer questions related to:
@@ -1119,12 +1127,17 @@ Only answer questions related to:
 If the question is not related to field data collection, politely decline to answer."""
             
             prompt = f"{context}\n\nQuestion: {message.content}\n\nAnswer:"
-            response = model.generate_content(prompt)
+            response = gemini_model.generate_content(prompt)
             message_dict["response"] = response.text
             message_dict["answered"] = True
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
             message_dict["response"] = "Sorry, I'm unable to process your question at the moment. Please try again later."
+            message_dict["answered"] = True
+    elif message.message_type == MessageType.AI:
+        # Gemini not available - provide fallback
+        message_dict["response"] = "AI assistant is currently unavailable. Please contact your supervisor for assistance or check the FAQ section."
+        message_dict["answered"] = True
     
     result = await db.messages.insert_one(message_dict)
     message_dict["_id"] = result.inserted_id
