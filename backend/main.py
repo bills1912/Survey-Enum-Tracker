@@ -13,7 +13,8 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from bson import ObjectId
 import json
 import uuid
